@@ -13,9 +13,9 @@ class Board:
         '''
         self.size = size
         self.colors = colors  # 可选颜色数组
-        self.board = np.concatenate([self.generate_board() for i in np.arange(num)]) # 连接多个棋盘
-        self.move_dict = {} # 记录每一步移动
-        self.round = 0      # 当前回合数
+        self.board = np.concatenate([self.generate_board() for i in range(num)]) # 连接多个棋盘
+        self.move_dict = {}  # 记录每一步移动
+        self.round = 0  # 当前回合数
 
     # 生成一个新棋盘，并保证该棋盘不存在连续三个相邻相同的颜色方块
     def generate_board(self):
@@ -25,14 +25,14 @@ class Board:
         返回值：
         np.array：返回新生成的矩阵；
         '''
-        a = np.concatenate([np.full((self.size // 2, self.size // 2), self.colors[i]) for i in np.arange(4)]).reshape(
-            (self.size ** 2, 1))
-        np.random.shuffle(a)               # 打乱颜色块的顺序
+        a = np.concatenate([np.full((self.size // 2, self.size // 2), self.colors[i])
+            for i in range(4)]).reshape(self.size ** 2, 1)
+        np.random.shuffle(a)  # 打乱颜色块的顺序
         new_array = a.reshape(self.size, self.size)
-        while self.check(new_array):         # 检查是否存在连续三个相邻元素
+        while self.check(new_array):  # 检查是否存在连续三个相邻元素
             for i, j in self.check(new_array):
                 # 随机替换掉其中一个同色元素
-                new_array[i][j] = new_array[i - random.randint(1, 3)][j - random.randint(1, 3)]
+                new_array[i][j] = new_array[i - np.random.randint(1, 3)][j - np.random.randint(1, 3)]
         return new_array
 
     def current_board(self):
@@ -66,13 +66,13 @@ class Board:
         set: （i，j）位置集合，即 (i, j) 是重复位置。
         '''
         repeats = set()
-        for i in np.arange(1, self.size - 1):           # 遍历行
+        for i in range(1, self.size - 1):  # 遍历行
             for j in np.arange(self.size):
                 a = array[i - 1:i + 2, j]
                 b = (a == array[i, j])
                 if np.sum(b) == 3:
                     repeats.add((i, j))
-        for i in np.arange(1, self.size - 1):           # 遍历列
+        for i in range(1, self.size - 1):  # 遍历列
             for j in np.arange(self.size):
                 a = array[j, i - 1:i + 2]
                 b = (a == array[j, i])

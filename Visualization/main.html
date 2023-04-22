@@ -1,87 +1,84 @@
-<!--现在这个只是一个测试样板，还没有正式开始-->
-
-
 <!DOCTYPE html>
-<html>
-    <head>
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualization</title>
+
+    <link rel="stylesheet" href="Styles/style.css">
+    <script src="Scripts/initialization.js"></script>
+  </head>
 
 
-      <style>
-        body div{
-          border:0px;
-          border-style: solid;
-          border-color: rgb(5, 14, 98);
-          border-radius:50%;
-        }
-
-
-      </style>
-
-    </head>
-
-
-    <body style="
-      padding: 200px;
-
-      display: grid;
-      gap:10px;
-      grid-template-columns: 100px 100px 100px
-    ">
-
-        <div style="
-          background-color: rgb(22, 218, 224);
-          height: 100px;
-          box-shadow:
-          0 0 5px 0px rgb(153, 5, 5), 
-          0 0 10px 5px rgb(244, 100, 100), 
-          0 0 15px 10px rgb(255, 255, 255); 
-
-          border: -10px;
-          border-color:rgb(153, 5, 5);
-        ">
-        </div>
-        <div class="grid-item" style="
-          background-color: rgb(13, 211, 82);
-          height: 100px;
-        ">
-        </div>
-        <div class="grid-item" style="
-        background-color: rgb(224, 134, 60);
-        height: 100px;
-      ">
-        </div>
-        <div style="
-        background-color: rgb(243, 121, 137);
-        height: 100px;
-      ">
-        </div>
-        <div style="
-        background-color: rgb(0, 0, 0);
-        height: 100px;
-      ">
-        </div>
-        <div style="
-          background-color: rgb(0, 0, 0);
-          height: 100px;
-        ">
-        </div>
-        <div style="
-          background-color: rgb(0, 0, 0);
-          height: 100px;
-        ">
-        </div>
-        <div style="
-        background-color: rgb(153, 5, 5);
-        height: 100px;
-      ">
-        </div>
-        <div style="
-        background-color: rgb(5, 14, 98);
-        height: 100px;
-      ">
-        </div>
-        
-    </body>
-
+  <body>
     
+    <div id="upper-section">
+
+      <div id="scores-graph">
+
+      </div>
+    </div>
+
+    <div id="lower-section">
+      <div class="sidebar" id="left-sidebar">
+        <h3 class="team-name">
+          BlueTeam<!--Substitue this with the real team name-->
+        </h3>
+        <div class="status">
+          <sapn class="text-of-status">领先</sapn>
+        </div>
+        <div class="total-scores">
+          <div class="sidebar-header">总得分</div>
+          <div class="numbers">1231321</div>
+        </div>
+        <div class="highest-combo">
+          <div class="sidebar-header">最高连消数</div>
+          <div class="numbers">1231321</div>
+        </div>
+        <div class="current-combos">
+          <div class="sidebar-header">当前连消数</div>
+          <div class="numbers">1231321</div>
+        </div>
+
+
+        <p></p>
+      </div>
+      <div id="board">
+        <div id="preview-board">
+  
+        </div>
+        <div id="main-board">
+          <!--
+            <img id="wallpaper" src="Photos/wallpaper.webp">
+          -->
+          
+        </div>
+      </div>
+      <div class="sidebar" id="right-sidebar">
+        <h3 class="team-name">
+          RedTeam<!--Substitue this with the real team name-->
+        </h3>
+        <div class="status">
+         <sapn class="text-of-status">落后</sapn>
+        </div>
+        <div class="total-scores">
+          <div class="sidebar-header">总得分</div>
+          <div class="numbers">123131</div>
+        </div>
+        <div class="highest-combo">
+          <div class="sidebar-header">最高连消数</div>
+          <div class="numbers">123121</div>
+        </div>
+        <div class="current-combos">
+          <div class="sidebar-header">当前连消数</div>
+          <div class="numbers">123131</div>
+        </div>
+      </div>
+    </div>
+
+
+
+  </body>
+
+
 </html>

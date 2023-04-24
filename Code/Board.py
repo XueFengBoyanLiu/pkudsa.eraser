@@ -32,7 +32,7 @@ class Board:
         while self.check(new_array):  # 检查是否存在连续三个相邻元素
             for i, j in self.check(new_array):
                 # 随机替换掉其中一个同色元素
-                new_array[i][j] = new_array[i - np.random.randint(1, 3)][j - np.random.randint(1, 3)]
+                new_array[i][j] = new_array[i - np.random.randint(1, self.size - 1)][j - np.random.randint(1, self.size - 1)]
         return new_array
 
     def current_board(self):

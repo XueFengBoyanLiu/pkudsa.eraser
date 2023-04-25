@@ -15,9 +15,9 @@ class Call:
 
     def call(self, *args, **kwargs):
         try:
-            begin = time.perf_counter_ns()
+            begin = time.perf_counter()
             self.result = self.func(*args, **kwargs)
-            end = time.perf_counter_ns()
+            end = time.perf_counter()
             self.state = end - begin
         except Exception as exception:
             self.state = exception
@@ -28,7 +28,6 @@ class Player:
         self.core = core
         self.time = 0
         self.error = None
-        self.output = None
 
     def __call__(self, funcname, *args, **kwargs):
         self.output = None
@@ -46,6 +45,6 @@ class Player:
             self.time += result.state
             if self.time >= MAXTIME:
                 raise Timeout()
-            self.output = result.result
+            return result.result
         except:
             self.error = traceback.format_exc()

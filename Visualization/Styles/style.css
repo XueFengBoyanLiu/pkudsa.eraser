@@ -11,7 +11,7 @@ body{
 }
 
 /* Two sidebars for each team to show their scores */
-
+/* Some variables */
 #left-sidebar{
   --teamcolor: rgb(5, 5, 153);
   --teamcolor2: rgb(5, 5, 153, 0.15);
@@ -99,7 +99,7 @@ body{
 
 
 /* The middle section */
-
+/* Some variables */
 #middle-section{
   --width: 400px;
   --unit-size: calc(var(--width) / 8);
@@ -114,7 +114,7 @@ body{
 /* The remained bar section */
 
 #remained-bar-section{
-  width: var(--width);
+  width: calc(var(--width) + var(--border-width) * 2);
   height: calc(var(--unit-size) + var(--border-width)*2) ;
 
   padding: 0px var(--border-width);
@@ -131,8 +131,8 @@ body{
 }
 
 #remained-bar-section .remained-bar{
-  width:calc(var(--unit-size) / 2);
-  height: 50px;
+  width:calc(var(--unit-size) / 3);
+  height: 40px;
   background-color: green;
 
   transition: 0.3s all;
@@ -140,25 +140,30 @@ body{
 
 /* The board*/
 
+#middle-section #board{
+  position:relative;
+}
+
+
 #middle-section #preview-board{
-  width: var(--width);
-  height: calc(var(--unit-size)*2);
+  width: calc(var(--width) + var(--border-width) * 2);
+  height: calc(var(--unit-size)*2 + var(--border-width));
 
   box-sizing: border-box;
   border-style: double;
   border-width: var(--border-width);
   border-bottom-width: 0;
 
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 
 
-  box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.4);
+  /* box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.4); */
 }
 
 #middle-section #main-board {
-  width: var(--width);
-  height: calc(var(--unit-size)*8);
+  width: calc(var(--width) + var(--border-width) * 2);
+  height: calc(var(--unit-size)*8 + var(--border-width));
   background-color: rgba(0, 0, 0, 0);
 
   box-sizing: border-box;
@@ -166,10 +171,10 @@ body{
   border-width: var(--border-width);
   border-top-width: 0;
   
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 
-  box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.16);
+  /* box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.16); */
   
 
   

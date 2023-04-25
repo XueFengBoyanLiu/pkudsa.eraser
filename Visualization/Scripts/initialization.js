@@ -1,3 +1,13 @@
+// Global variables
+const width=400;
+const unitSize=width/8;
+const borderWidth=5;
+
+const remainedBarWidth=40;
+
+const pieceGap=3;
+const pieceBorderRadius=4;
+
 // Set a default speed scale for replay
 speedScale=1;
 
@@ -88,7 +98,7 @@ const remainedBar=document.getElementsByClassName("remained-bar");
 
 function drawRemainedBar(remainlist) {
   for (i=0;i<remainlist.length;i++) {
-    remainedBar[i].style.height=`${remainlist[i] / totalRemains * 50}px`;
+    remainedBar[i].style.height=`${remainlist[i] / totalRemains * remainedBarWidth}px`;
   }
 }
 
@@ -114,5 +124,45 @@ function updateSideBar(object) {
 
 
 // Define a function to draw the score graph
+
+
+
+// Define a function to initialize the girds on the board
+function initializeGrids() {
+  for (let i=1;i<=10;i++) {
+    for (let j=1;j<=8;j++){
+
+      let backgroudBlock=document.createElement("div");
+      backgroudBlock.className="backgourd-block";
+      backgroudBlock.style.position="absolute";
+      backgroudBlock.style.boxSizing="border-box";
+      backgroudBlock.style.width=`${unitSize - pieceGap}px`;
+      backgroudBlock.style.height=`${unitSize - pieceGap}px`;
+      backgroudBlock.style.borderRadius=`${pieceBorderRadius}px`;
+      if (i<=2){
+        backgroudBlock.style.backgroundColor="rgb(220, 220, 220)";
+      } else{
+        backgroudBlock.style.backgroundColor="rgb(240, 240, 240)";
+      }
+
+      backgroudBlock.style.border="None";
+      backgroudBlock.style.zIndex="10";
+      backgroudBlock.style.left=`${borderWidth + (j-1) * unitSize + pieceGap/2}px`;
+      backgroudBlock.style.top=`${borderWidth + (i-1) * unitSize + pieceGap/2}px`;
+      document.getElementById("board").appendChild(backgroudBlock);
+
+    }
+  }
+}  
+
+initializeGrids();
+
+
+// Define a function to move a piece
+
+
+function moveTo(piece,x,y){
+}
+
 
 

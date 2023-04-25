@@ -3,14 +3,14 @@ body{
 }
 
 
-#lower-section{
+#main-display{
   display:flex;
   flex-direction:row;
   justify-content:center;
   
 }
 
-
+/* Two sidebars for each team to show their scores */
 
 #left-sidebar{
   --teamcolor: rgb(5, 5, 153);
@@ -24,12 +24,10 @@ body{
   --teamcolor3: rgb(153, 5, 5, 0.4);
 }
 
-
-
-.sidebar{  
+#left-sidebar,#right-sidebar{
   color:var(--teamcolor);
 
-  flex-grow:0.05;
+  width:120px;
 
   border-color: var(--teamcolor);
   border-style: solid;
@@ -41,88 +39,144 @@ body{
   margin-right:10px;
   margin-left:10px;
 
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 
   display:flex;
   flex-direction:column;
   align-items:center;
-
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  justify-content: space-between;
 }
 
 
-.sidebar .team-name{
-  font-size: 2em;
-  color:var(--teamcolor);
-  text-align: center;
-  margin-top: 0.5em;
-  margin-bottom: 1em;
+/* Items in sidebars */
+  .sidebar .team-name{
+    word-break:break-all;
+
+    width:120px;
+    height: 55px;
+    font-size: 1.5em;
+    color:var(--teamcolor);
+    text-align: center;
+    margin-top: 0.5em;
+    margin-bottom: 0em;
+  }
+
+  .sidebar .status{
+    margin-top:-30px;
+
+    font-weight: bold;
+
+    display:flex;
+    background-color: rgb(244, 244, 244);
+    justify-content: center;
+    align-items: center;
+    height:6em;
+    width:6em;
+    border-radius: 50%;
+    border-style: solid;
+    border-color: var(--teamcolor);
+    border-width: 3px;
+
+    box-shadow: 0 0 10px var(--teamcolor3);
+  }
+    .sidebar .status .text-of-status{
+    font-size:2em;
+
+  }
+  .sidebar .sidebar-header{
+    /*margin-top:2.5em;*/
+    text-align: center;
+    font-size:1.5em;
+    font-weight: bold;
+  }
+  .sidebar .numbers{
+    margin-top: 8px;
+    text-align: center;
+    font-size:1.5em;
+    font-weight: bold;
+  }
+
+
+
+/* The middle section */
+
+#middle-section{
+  --width: 400px;
+  --unit-size: calc(var(--width) / 8);
+  --border-width: 5px;
 }
 
-.sidebar .status{
-  font-weight: bold;
+#middle-section{
+  width: var(--width);
+  margin: 0px 8px;
+}
 
-  display:flex;
-  background-color: rgb(244, 244, 244);
+/* The remained bar section */
+
+#remained-bar-section{
+  width: var(--width);
+  height: calc(var(--unit-size) + var(--border-width)*2) ;
+
+  padding: 0px var(--border-width);
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+
+  box-sizing: border-box;
+}
+
+#remained-bar-section .remained-bar-container{
+  display: flex;
   justify-content: center;
-  align-items: center;
-  height:8em;
-  width:8em;
-  border-radius: 50%;
-  border-style: solid;
-  border-color: var(--teamcolor);
-  border-width: 3px;
-
-  box-shadow: 0 0 10px var(--teamcolor3);
-}
-.sidebar .status .text-of-status{
-  font-size:3em;
-
-}
-.sidebar .sidebar-header{
-  margin-top:2.5em;
-  text-align: center;
-  font-size:2em;
-  font-weight: bold;
-}
-.sidebar .numbers{
-  margin-top: 8px;
-  text-align: center;
-  font-size:2em;
-  font-weight: bold;
+  align-items: end;
 }
 
+#remained-bar-section .remained-bar{
+  width:calc(var(--unit-size) / 2);
+  height: 50px;
+  background-color: green;
 
-
-
-
-
-
-
-
-#board{
-  width:640px;
-}
-#board #preview-board{
-  width:640px;
-  height:240px;
+  transition: 0.3s all;
 }
 
-#board #main-board {
-  width:640px;
-  height:640px;
-  background-color: rgba(0, 0, 0, 0.16);
+/* The board*/
+
+#middle-section #preview-board{
+  width: var(--width);
+  height: calc(var(--unit-size)*2);
+
+  box-sizing: border-box;
+  border-style: double;
+  border-width: var(--border-width);
+  border-bottom-width: 0;
+
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+
+
+  box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.4);
+}
+
+#middle-section #main-board {
+  width: var(--width);
+  height: calc(var(--unit-size)*8);
+  background-color: rgba(0, 0, 0, 0);
+
+  box-sizing: border-box;
+  border-style: double;
+  border-width: var(--border-width);
+  border-top-width: 0;
   
-  border-radius: 4px;
-  border-color: rgb(20, 102, 0);
-  border: 4px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
 
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.16);
+  
+
+  
+  /*background: url(../photos/wallpaper.webp) no-repeat center center/ cover;*/
 }
 
-#board #main-board #wallpaper{
-  width:640px;
-  height:640px;
-}
+
 
 
 

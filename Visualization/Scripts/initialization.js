@@ -6,7 +6,7 @@ const borderWidth=5;
 const remainedBarWidth=40;
 
 const pieceGap=3;
-const pieceBorderRadius=2;
+const pieceBorderRadius=4;
 
 // Set a default speed scale for replay
 speedScale=1;
@@ -131,6 +131,7 @@ function updateSideBar(object) {
 function initializeGrids() {
   for (let i=1;i<=10;i++) {
     for (let j=1;j<=8;j++){
+
       let backgroudBlock=document.createElement("div");
       backgroudBlock.className="backgourd-block";
       backgroudBlock.style.position="absolute";
@@ -138,7 +139,12 @@ function initializeGrids() {
       backgroudBlock.style.width=`${unitSize - pieceGap}px`;
       backgroudBlock.style.height=`${unitSize - pieceGap}px`;
       backgroudBlock.style.borderRadius=`${pieceBorderRadius}px`;
-      backgroudBlock.style.backgroundColor="rgb(236, 236, 236)";
+      if (i<=2){
+        backgroudBlock.style.backgroundColor="rgb(220, 220, 220)";
+      } else{
+        backgroudBlock.style.backgroundColor="rgb(240, 240, 240)";
+      }
+
       backgroudBlock.style.border="None";
       backgroudBlock.style.zIndex="10";
       backgroudBlock.style.left=`${borderWidth + (j-1) * unitSize + pieceGap/2}px`;

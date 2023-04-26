@@ -17,7 +17,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-SIZE = 8
+BOARD_SIZE = 8
 N_ROWS = 800
 
 class Invalid_move(Exception):
@@ -25,16 +25,21 @@ class Invalid_move(Exception):
 
 class Game_play():
     def __init__(self, player_1, player_2):
-        self.players = (player_1, player_2)
+        '''
+        Parameter
+        ----------
+        player_1, player_2: <class exception_manager.Player>
+        '''
+        self.players = (Player_safe(player_1), Player_safe(player_2))
         self.terminated = False
         self.winner = None
         # the players are wrapped by exception_manager.py
         self.board = Board()
-        self.remained_blocks = [N_ROWS - SIZE for i in range(SIZE)]
+        self.remained_blocks = [N_ROWS - BOARD_SIZE for i in range(BOARD_SIZE)]
 
         self.turn = 0
         self.replay = {'totalFrames': 0,
-                'totalRemains': SIZE * (N_ROWS - SIZE),
+                'totalRemains': BOARD_SIZE * (N_ROWS - BOARD_SIZE),
                 'scores':{}
                 'frames': []}
 
@@ -43,7 +48,7 @@ class Game_play():
         self.high_combo = (0, 0)
         self.current_combo = (0, 0)
 
-        self.record()
+        self.record_frame()
 
     def _get_side_status(self, side=0):
         a = 1 if self.score[side] >= self.score[1 - side] else 0
@@ -76,13 +81,20 @@ class Game_play():
 
         # make a move for the current player
         mv = self.ask_for_move(current_player)
+        if current_player.error is not None:
+            ## TODO: add error message to replay, set exit status
+            self.terminated = True
+            self.winner = self.players[1 - side]
+            self.end_game()
+
         if not self.is_invalid_move(mv):
             self.terminated = True
             self.winner = self.players[1 - side]
+            self.end_game()
             return
         self.board.change(*mv)
 
-        self.record()
+        self.record_frame()
 
         # eliminating blocks
         pos_changed = np.array(mv)
@@ -95,7 +107,7 @@ class Game_play():
             self.current_combo[side] += columns_eliminated.sum()
             self.high_combo[side] = max(self.high_combo[side],
                     self.current_combo[side])
-            self.record()
+            self.record_frame()
 
     def ask_for_move(self, player):
         '''
@@ -104,32 +116,7 @@ class Game_play():
         '''
         return player('move', self.board.get_info())
 
-    def is_invalid_move(self, move) -> bool:
-        '''
-        This function will check the following:
-        - move is a (2, 2) array-like object
-        - the two points are adjacent
-        - the points lie inside the board
-        '''
-        try:
-            blocks = np.array(move)
-            if blocks.shape != (2, 2):
-                raise Invalid_move
-            distance = np.sum(np.abs(blocks[0] - blocks[1]))
-            if distance != 1:
-                raise Invalid_move
-            if not ((blocks>=0) & (blocks<self.board.size)).all():
-                raise Invalid_move
-            return True
-        except Exception as exception:
-            self.handle_invalid_move(exception)
-            return False
-
-    def handle_invalid_move(self, exception):
-        ##TODO
-        pass
-
-    def record(self):
+    def record_frame(self):
         '''
         Generate a frame for replay
         '''
@@ -146,9 +133,10 @@ class Game_play():
         return
 
     def end_game(self):
-        ## TODO: add this to replay
+        '''End the game and format the replay as .json file'''
         history = np.vstack(self.scores_history)
         history = pd.DataFrame(history, columns=['left', 'right'])
         history['relative'] = history['left'] - history['right']
         self.replay['scores'] = history.to_dict('list')
+        ## TODO: write replay.json file
         return

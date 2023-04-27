@@ -1,12 +1,17 @@
 // Global variables
 const width=400;
 const unitSize=width/8;
-const borderWidth=5;
+const borderWidth=4;
 
 const remainedBarWidth=40;
 
-const pieceGap=3;
-const pieceBorderRadius=4;
+const blockGap=3.5;
+const blockBorderRadius=4;
+
+const radiusGap=5;
+
+// Green Blue Orange Pink
+const colorArray=["rgb(13, 211, 82)","rgb(22, 218, 224)","rgb(224, 134, 60)","rgb(243, 121, 137)"];
 
 // Set a default speed scale for replay
 speedScale=1;
@@ -66,7 +71,7 @@ initial={
 
 totalRemains=initial.totalRemains;
 
-// Get the size of the board and the total number of frames
+// Get the total number of frames
 totalFrames=initial.totalFrames;
 
 // Define a function to draw the frame
@@ -96,7 +101,7 @@ function play() {
 // Define a function to draw the remained bar
 const remainedBar=document.getElementsByClassName("remained-bar");
 
-function drawRemainedBar(remainlist) {
+function updateRemainedBar(remainlist) {
   for (i=0;i<remainlist.length;i++) {
     remainedBar[i].style.height=`${remainlist[i] / totalRemains * remainedBarWidth}px`;
   }
@@ -127,7 +132,7 @@ function updateSideBar(object) {
 
 
 
-// Define a function to initialize the girds on the board
+// Define a function to initialize the girds on the board and run it
 function initializeGrids() {
   for (let i=1;i<=10;i++) {
     for (let j=1;j<=8;j++){
@@ -136,19 +141,21 @@ function initializeGrids() {
       backgroudBlock.className="backgourd-block";
       backgroudBlock.style.position="absolute";
       backgroudBlock.style.boxSizing="border-box";
-      backgroudBlock.style.width=`${unitSize - pieceGap}px`;
-      backgroudBlock.style.height=`${unitSize - pieceGap}px`;
-      backgroudBlock.style.borderRadius=`${pieceBorderRadius}px`;
+      backgroudBlock.style.width=`${unitSize - blockGap}px`;
+      backgroudBlock.style.height=`${unitSize - blockGap}px`;
+      backgroudBlock.style.borderRadius=`${blockBorderRadius}px`;
       if (i<=2){
-        backgroudBlock.style.backgroundColor="rgb(220, 220, 220)";
+        backgroudBlock.style.backgroundColor="white";
+        backgroudBlock.style.opacity="0.9";
       } else{
-        backgroudBlock.style.backgroundColor="rgb(240, 240, 240)";
+        backgroudBlock.style.backgroundColor="white";
+        backgroudBlock.style.opacity="0.2";
       }
 
-      backgroudBlock.style.border="None";
+      backgroudBlock.style.border="none";
       backgroudBlock.style.zIndex="10";
-      backgroudBlock.style.left=`${borderWidth + (j-1) * unitSize + pieceGap/2}px`;
-      backgroudBlock.style.top=`${borderWidth + (i-1) * unitSize + pieceGap/2}px`;
+      backgroudBlock.style.left=`${borderWidth + (j-1) * unitSize + blockGap/2}px`;
+      backgroudBlock.style.top=`${borderWidth + (i-1) * unitSize + blockGap/2}px`;
       document.getElementById("board").appendChild(backgroudBlock);
 
     }
@@ -157,11 +164,70 @@ function initializeGrids() {
 
 initializeGrids();
 
+// Define a series of functions to create pieces with different colors
+function createPiece(id,color) {
+  let piece=document.createElement("div");
+  piece.className="piece";
+  piece.id=id;
+  piece.style.position="absolute";
+  piece.style.boxSizing="border-box";
+  piece.style.width=`${unitSize - blockGap -radiusGap}px`;
+  piece.style.height=`${unitSize - blockGap -radiusGap}px`;
+  piece.style.borderRadius=`50%`;
+  piece.style.backgroundColor=color;
+  piece.style.zIndex="20";
+  piece.style.position="absolute"
+  piece.style.display="none";
+  piece.style.transition="all 0.3s ease-in-out";
+
+  piece.style.borderColor="black";
+  piece.style.borderStyle="solid";
+  piece.style.borderWidth="2px";
+  piece.style.boxShadow="0px 0px 2px 0px rgba(0,0,0,0.75)";
+
+  document.getElementById("board").appendChild(piece);
+  return piece;
+}
+
+// Define a function to create all the pieces
+function createAllPieces() {
+
+}
+
+
+// Define a function to eliminate a piece
+function eliminate(piece,team){
+  if (piece.style.display === "none") {
+    return;
+  } else{
+  piece.classList.add("eliminated");
+  setTimeout(function(){
+    piece.style.display="none";
+    piece.classList.remove("eliminated");
+    piece.style.top=`${borderWidth +  10 * unitSize + blockGap/2+radiusGap / 2}px`;
+  }
+  ,300);
+  }
+}
 
 // Define a function to move a piece
-
-
 function moveTo(piece,x,y){
+  if (piece.style.display==="none") {
+    piece.style.display="block";
+  }
+  piece.style.left=`${borderWidth + (x-1) * unitSize + blockGap/2+radiusGap / 2}px`;
+  piece.style.top=`${borderWidth + (y-1) * unitSize + blockGap/2+radiusGap / 2}px`;
+}
+
+
+// A function for testing
+function test() {
+  for(i=1;i<=8;i++){
+    for (j=1;j<=10;j++){
+      let piece=createPiece(`r${j}c${i}`,colorArray[Math.floor(Math.random()*colorArray.length)]);
+      moveTo(piece,i,j);
+    }
+  }
 }
 
 

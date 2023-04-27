@@ -1,4 +1,5 @@
 ## the game interaction
+from __future__ import annotations
 from board import *
 from exception_manager import *
 
@@ -13,22 +14,17 @@ from exception_manager import *
 import threading
 import time
 import traceback
-from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-BOARD_SIZE = 8
-N_ROWS = 800
-
-class Invalid_move(Exception):
-    pass
+from config import *
 
 class Game_play():
     def __init__(self, player_1, player_2):
         '''
-        Parameter
+        Parameters
         ----------
-        player_1, player_2: <class exception_manager.Player>
+        player_1, player_2: imported from player's code
         '''
         self.players = (Player_safe(player_1), Player_safe(player_2))
         self.terminated = False
@@ -40,13 +36,15 @@ class Game_play():
         self.turn = 0
         self.replay = {'totalFrames': 0,
                 'totalRemains': BOARD_SIZE * (N_ROWS - BOARD_SIZE),
-                'scores':{}
+                'scores': {},
+                'exitStatus': 0,
+                'errorMessage': '',
                 'frames': []}
 
         self.scores_history = []
-        self.score = (0, 0)
-        self.high_combo = (0, 0)
-        self.current_combo = (0, 0)
+        self.score = [0, 0]
+        self.high_combo = [0, 0]
+        self.current_combo = [0, 0]
 
         self.record_frame()
 
@@ -71,6 +69,9 @@ class Game_play():
         if self.terminated:
             self.end_game()
             return
+        if self.turn >= MAX_TURN * 2:
+            self.end_game()
+            return
 
         # update turn data
         self.turn += 1
@@ -82,10 +83,12 @@ class Game_play():
         # make a move for the current player
         mv = self.ask_for_move(current_player)
         if current_player.error is not None:
-            ## TODO: add error message to replay, set exit status
             self.terminated = True
             self.winner = self.players[1 - side]
+            self.replay['exitStatus'] = side
+            self.replay['errorMessage'] = current_player.error
             self.end_game()
+            return
 
         if not self.is_invalid_move(mv):
             self.terminated = True
@@ -97,10 +100,9 @@ class Game_play():
         self.record_frame()
 
         # eliminating blocks
-        pos_changed = np.array(mv)
         while True:
-            columns_eliminated, pts, pos_changed = self.board.eliminate(pos_changed)
-            if pos_changed is None:
+            pts, columns_eliminated, is_end = self.board.eliminate()
+            if columns_eliminated.sum() == 0:
                 break
             self.remained_blocks = self.remained_blocks - columns_eliminated
             self.score[side] += pts

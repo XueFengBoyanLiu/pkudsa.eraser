@@ -13,10 +13,10 @@ class Board:
         '''
         self.size = size
         self.colors = colors  # 可选颜色数组
-        self.board = np.concatenate([self.generate_board() for i in range(num)]).T # 连接多个棋盘
-        #！！！注意！！！这里把棋盘转置了一下（不会写移到列底，只会写移到行末）
+        self.board = np.concatenate([self.generate_board() for i in range(num)]) # 连接多个棋盘
         self.move_dict = {}  # 记录每一步移动
         self.round = 0  # 当前回合数
+        self.index=self.size*np.ones(self.size) #每列切片的起点索引
 
     # 生成一个新棋盘，并保证该棋盘不存在连续三个相邻相同的颜色方块
     def generate_board(self):
@@ -31,12 +31,12 @@ class Board:
 
         np.random.shuffle(a)  # 打乱颜色块的顺序
         new_array = a.reshape(self.size, self.size)
-
+        '''
         while self.check(new_array):  # 检查是否存在连续三个相邻元素
             for i, j in self.check(new_array):
                 # 随机替换掉其中一个同色元素
                 new_array[i][j] = new_array[i - np.random.randint(1,self.size-1)][j - np.random.randint(1,self.size-1)]
-
+        '''
         return new_array
 
     def current_board(self):
@@ -140,24 +140,23 @@ class Board:
         #筛选出所有在同一行（或列）有三个及以上连续元素的的联通元素组
         return list_of_connected_elements
 
-    def eliminate_and_score(self):
-        list_of_connected_elements=self.scan_for_connected()
+    def eliminate(self):
+        list_of_connected_elements = self.scan_for_connected()
         scorelist = list(map(lambda x: (len(x) - 2) ** 2, list_of_connected_elements))
-        score=sum(scorelist)
-        #为了避免多次调用，在这里也顺便把分算了 score:int 总得分
+        score = sum(scorelist)
+        # 为了避免多次调用，在这里也顺便把分算了 score:int 总得分
+        changed = np.zeros((self.size, self.size), bool)
+
         for sublst in list_of_connected_elements:
             for cordinates in sublst:
-                self.board[cordinates]="Q"
-        #把所有的连续同色元素替换成“Q”
-        for i in range(self.board.shape[0]):
-            row = self.board[i]
-            Q_indices = np.where(row == 'Q')[0]
-            if len(Q_indices) > 0:
-                row = np.concatenate((row[row != 'Q'], row[Q_indices]))
-                self.board[i] = row
-        #将所有的“Q”移到最上(其实是右）方
+                changed[cordinates] = True
+        columns_eliminated = self.size * np.mean(changed, axis=0)
 
-
-
-
-
+        # 把所有的连续同色元素替换成“Q”,并以columns_eliminated（numpy array）返回每一列被消除的元素个数
+        for i in range(self.size):
+            col = self.board[0:self.size,i]
+            indices=np.where(changed[:,i]==False)[0]
+            if len(indices)!=self.size:
+                self.board[0:self.size,i] =np.concatenate((col[indices],self.board[int(self.index[i]):int(self.index[i]+columns_eliminated[i]),i]))
+        # 索引主棋盘以外的和被消除部分等长的部分顺次填补主棋盘的空缺
+        return score, columns_eliminated

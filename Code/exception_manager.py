@@ -3,9 +3,9 @@ import threading
 import traceback
 import numpy as np
 
-MAXTIME = 0.2
-BOARD_SIZE = 8
+from config import *
 
+## TODO: add explicit error message
 class Timeout(Exception):
     pass
 
@@ -51,11 +51,11 @@ class Player_safe:
                     args=(*args,), kwargs={**kwargs})
             thread.daemon = True
             thread.start()
-            thread.join(MAXTIME)
+            thread.join(MAX_TIME)
             if isinstance(result.state, Exception):
                 raise result.state
             self.time += result.state
-            if self.time >= MAXTIME:
+            if self.time >= MAX_TIME:
                 raise Timeout()
             if funcname == 'move':
                 if not self.is_invalid_move(result.result):

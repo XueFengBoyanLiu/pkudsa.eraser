@@ -5,12 +5,18 @@ import numpy as np
 
 from config import *
 
-## TODO: add explicit error message
 class Timeout(Exception):
-    pass
+    def __init__(self):
+        super().__init__()
+    def __str__(self):
+        return 'Time limit exceeded.'
 
 class InvalidMove(Exception):
-    pass
+    def __init__(self, message):
+        super().__init__()
+        self.error_message = message
+    def __str__(self):
+        return self.error_message
 
 class Caller:
     def __init__(self, func):
@@ -58,46 +64,39 @@ class Player_safe:
             if self.time >= MAX_TIME:
                 raise Timeout()
             if funcname == 'move':
-                if not self.is_invalid_move(result.result):
-                    raise InvalidMove()
+                self.check_for_invalid_move(result.result)
             return result.result
         except:
-            if self.error is None:
-                self.error = traceback.format_exc()
+            self.error = traceback.format_exc()
 
-    def is_invalid_move(self, move) -> bool:
+    def check_for_invalid_move(self, move):
         '''
         This function will check the following:
         - move is a (2, 2) array-like object
         - the two points are adjacent
         - the points lie inside the board
         '''
-        try:
-            blocks = np.array(move)
-            if blocks.shape != (2, 2):
-                return False
-            distance = np.abs(blocks[0] - blocks[1]).sum()
-            if distance != 1:
-                return False
-            if not ((blocks >= 0) & (blocks < BOARD_SIZE)).all():
-                return False
-            return True
-        except Exception as exception:
-            self.error = traceback.format_exc()
-            return False
+        blocks = np.array(move)
+        if blocks.shape != (2, 2):
+            raise InvalidMove('Not a proper input.')
+        distance = np.abs(blocks[0] - blocks[1]).sum()
+        if distance != 1:
+            raise InvalidMove('Not adjacent positions.')
+        if not ((blocks >= 0) & (blocks < BOARD_SIZE)).all():
+            raise InvalidMove('Positions out of board.')
 
 if __name__ == '__main__':
     class tester:
         def __init__(self):
             pass
         def move(self, n, a, b):
-            if n == 0.5:
-                return ((a,b),(b,a))
+            if n == 0:
+                return ((a,a),(b,a))
             time.sleep(0.01)
             return self.move(n-1, a, b)
 
     t = tester()
     p = Player_safe(t)
-    out = p('move', 19, 7, 6)
+    out = p('move', 9, -1, 0)
     print(out, p.time)
     print(p.error)

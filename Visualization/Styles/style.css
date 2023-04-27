@@ -30,11 +30,18 @@
   --radius-gap: 2px;
 }
 
+#scores-graph-section{
+  --graph-width:260px;
+}
+
 /* Animations */
 /* Animation for a piece to be eliminated */
 @keyframes eliminate{
   0%{
     transform: scale(1);
+  }
+  50%{
+    transform: scale(1.25);
   }
   /* 50%{
     transform: scale(0.2);
@@ -49,12 +56,13 @@
   animation-fill-mode: forwards;
 }
 
-
-
-
-/* General Style */
+/* General Styles */
 body{
   font-family: Arial, sans-serif;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
 }
 
 
@@ -64,6 +72,98 @@ body{
   justify-content:center;
   
 }
+
+
+/* Scores graph */
+#scores-graph-section{
+ position:relative;
+}
+
+#scores-graph{
+  width:var(--graph-width);
+  height: 500px;
+  position:relative;
+}
+
+/* Written by GPT-4 to style the select dorpdown */
+#select-bar{
+  margin-bottom: 10px;
+
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+
+.custom-select {
+  position: relative;
+  display: inline-block;
+  width: 110px;
+  padding: 0;
+  margin: 0;
+}
+
+.custom-select select {
+  display: none;
+}
+
+.select-selected {
+  background-color: #3a3a3a;
+  color: #fff;
+  padding: 10px 0px;
+  cursor: pointer;
+  border: none;
+  /* border-radius: 4px; */
+  font-size: 1.2em;
+  font-weight: bold;
+  text-align: center;
+  user-select: none;
+  transition: background-color 0.2s ease;
+
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+}
+
+.select-selected:hover {
+  background-color: #5a5a5a;
+}
+
+.select-items {
+  position: absolute;
+  background-color: #3a3a3a;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  max-height: 200px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.select-items div {
+  color: #fff;
+  text-align: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.select-items div:hover {
+  background-color: #5a5a5a;
+}
+
+.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/*  */
+
+
+
 
 /* Two sidebars for each team to show their scores */
 /* Some variables */
@@ -200,14 +300,9 @@ body{
   /* background: url(../photos/wallpaper.webp) no-repeat center center/ cover; */
 }
 
-/* Common styles for backgourd blocks
-.background-block{
-  position: absolute;
-  box-sizing: border-box;
-  width:calc(var(--unit-size) - var(--block-gap));
-  height:calc(var(--unit-size) - var(--block-gap));
-  border-radius:var(--block-border-radius);
-} */
+
+
+
 
 
 

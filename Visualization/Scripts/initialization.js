@@ -10,6 +10,9 @@ const blockBorderRadius=4;
 
 const radiusGap=5;
 
+const graphWidth=260;
+const strokeWidth=1;
+
 // Green Blue Orange Pink
 const colorArray=["rgb(13, 211, 82)","rgb(22, 218, 224)","rgb(224, 134, 60)","rgb(243, 121, 137)"];
 
@@ -131,19 +134,29 @@ function updateSideBar(object) {
 // Define a function to draw the score graph
 
 
+// Create a template background block
+function createTemplateBackgroundBlock(){
+  let backgroudBlock=document.createElement("div");
+  backgroudBlock.className="backgourd-block";
+  backgroudBlock.style.position="absolute";
+  backgroudBlock.style.boxSizing="border-box";
+  backgroudBlock.style.width=`${unitSize - blockGap}px`;
+  backgroudBlock.style.height=`${unitSize - blockGap}px`;
+  backgroudBlock.style.borderRadius=`${blockBorderRadius}px`;
 
-// Define a function to initialize the girds on the board and run it
-function initializeGrids() {
+  backgroudBlock.style.border="none";
+  backgroudBlock.style.zIndex="10";
+  document.getElementById("board").appendChild(backgroudBlock);
+  return backgroudBlock;
+}
+
+templateBackgroundBlock=createTemplateBackgroundBlock();
+
+// Define a function to initialize the gird on the board and run it
+function initializeGrid() {
   for (let i=1;i<=10;i++) {
     for (let j=1;j<=8;j++){
-
-      let backgroudBlock=document.createElement("div");
-      backgroudBlock.className="backgourd-block";
-      backgroudBlock.style.position="absolute";
-      backgroudBlock.style.boxSizing="border-box";
-      backgroudBlock.style.width=`${unitSize - blockGap}px`;
-      backgroudBlock.style.height=`${unitSize - blockGap}px`;
-      backgroudBlock.style.borderRadius=`${blockBorderRadius}px`;
+      let backgroudBlock=templateBackgroundBlock.cloneNode(true);
       if (i<=2){
         backgroudBlock.style.backgroundColor="white";
         backgroudBlock.style.opacity="0.9";
@@ -151,41 +164,45 @@ function initializeGrids() {
         backgroudBlock.style.backgroundColor="white";
         backgroudBlock.style.opacity="0.2";
       }
-
-      backgroudBlock.style.border="none";
-      backgroudBlock.style.zIndex="10";
       backgroudBlock.style.left=`${borderWidth + (j-1) * unitSize + blockGap/2}px`;
       backgroudBlock.style.top=`${borderWidth + (i-1) * unitSize + blockGap/2}px`;
-      document.getElementById("board").appendChild(backgroudBlock);
 
+      document.getElementById("board").appendChild(backgroudBlock);
     }
   }
 }  
 
-initializeGrids();
+initializeGrid();
 
 // Define a series of functions to create pieces with different colors
-function createPiece(id,color) {
+
+function createTemplatePiece() {
   let piece=document.createElement("div");
   piece.className="piece";
-  piece.id=id;
   piece.style.position="absolute";
   piece.style.boxSizing="border-box";
   piece.style.width=`${unitSize - blockGap -radiusGap}px`;
   piece.style.height=`${unitSize - blockGap -radiusGap}px`;
   piece.style.borderRadius=`50%`;
-  piece.style.backgroundColor=color;
   piece.style.zIndex="20";
   piece.style.position="absolute"
   piece.style.display="none";
-  piece.style.transition="all 0.3s ease-in-out";
+  piece.style.transition="all 0.3s ease-in";
 
-  piece.style.borderColor="black";
+  piece.style.borderColor="white";
   piece.style.borderStyle="solid";
-  piece.style.borderWidth="2px";
-  piece.style.boxShadow="0px 0px 2px 0px rgba(0,0,0,0.75)";
+  piece.style.borderWidth="1px";
+  piece.style.boxShadow="0px 0px 4px 0px rgba(0,0,0,0.3)";
+  return piece;
+}
+// Create a template piece
+const templatePiece=createTemplatePiece()
 
-  document.getElementById("board").appendChild(piece);
+// Create a piece with certain id and color
+function createPiece(id,color) {
+  let piece=templatePiece.cloneNode(true);
+  piece.id=id;
+  piece.style.backgroundColor=color;
   return piece;
 }
 
@@ -204,19 +221,24 @@ function eliminate(piece,team){
   setTimeout(function(){
     piece.style.display="none";
     piece.classList.remove("eliminated");
-    piece.style.top=`${borderWidth +  10 * unitSize + blockGap/2+radiusGap / 2}px`;
   }
   ,300);
+  if (team==="left") {
+  piece.style.left=`${borderWidth +  (-2) * unitSize + blockGap/2+radiusGap / 2}px`;
+  } else if (team==="right") {
+  piece.style.left=`${borderWidth +  (10) * unitSize + blockGap/2+radiusGap / 2}px`;
   }
+} 
 }
 
 // Define a function to move a piece
 function moveTo(piece,x,y){
+  piece.style.left=`${borderWidth + (x-1) * unitSize + blockGap/2+radiusGap / 2}px`;
+  piece.style.top=`${borderWidth + (y-1) * unitSize + blockGap/2+radiusGap / 2}px`;
   if (piece.style.display==="none") {
     piece.style.display="block";
   }
-  piece.style.left=`${borderWidth + (x-1) * unitSize + blockGap/2+radiusGap / 2}px`;
-  piece.style.top=`${borderWidth + (y-1) * unitSize + blockGap/2+radiusGap / 2}px`;
+
 }
 
 
@@ -226,9 +248,61 @@ function test() {
     for (j=1;j<=10;j++){
       let piece=createPiece(`r${j}c${i}`,colorArray[Math.floor(Math.random()*colorArray.length)]);
       moveTo(piece,i,j);
+      document.getElementById("board").appendChild(piece);
     }
   }
 }
+
+
+
+
+// Event listener for the select dropdown (written by GPT-4)
+document.addEventListener('DOMContentLoaded', () => {
+  const selectElement = document.getElementById('scores-mode');
+  const customSelect = selectElement.parentElement;
+
+  const selected = document.createElement('div');
+  selected.className = 'select-selected';
+  selected.textContent = selectElement.options[selectElement.selectedIndex].textContent;
+  customSelect.appendChild(selected);
+
+  const itemsContainer = document.createElement('div');
+  itemsContainer.className = 'select-items';
+  customSelect.appendChild(itemsContainer);
+
+  for (const option of selectElement.options) {
+      const item = document.createElement('div');
+      item.textContent = option.textContent;
+      item.addEventListener('click', () => {
+          selectElement.value = option.value;
+          selected.textContent = option.textContent;
+          itemsContainer.classList.remove('show');
+          onSelectChange(option.value);
+      });
+      itemsContainer.appendChild(item);
+  }
+
+  selected.addEventListener('click', () => {
+      itemsContainer.classList.toggle('show');
+  });
+
+  document.addEventListener('click', (event) => {
+      if (!customSelect.contains(event.target)) {
+          itemsContainer.classList.remove('show');
+      }
+  });
+});
+
+// Define a function to handle the change in the selected option
+function onSelectChange(newValue) {
+  console.log("Selected value changed to:", newValue);
+  if (newValue==="difference"){
+
+  } else if (newValue==="raw"){
+    
+  }
+}
+
 
 
 

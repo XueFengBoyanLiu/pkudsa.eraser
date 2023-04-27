@@ -1,82 +1,36 @@
 import numpy as np
 import random
-np.set_printoptions(threshold=np.inf)
+import pandas as pd
+
 
 class Board:
-    # 初始化棋盘大小、颜色和棋盘数量
-    def __init__(self, size=8, num=100, colors=np.array(['R', 'G', 'B', 'Y'])):
-        '''
-        初始化棋盘
-        size: 棋盘大小，默认值为8
-        num: 一个测试中生成的子棋盘数量，默认值为100
-        colors: 可用颜色列表， 默认为 ['R', 'G', 'B', 'Y']
-        '''
+    def __init__(self, size=8, board_num=1000, colors=np.array(['R', 'G', 'B', 'Y'])):
         self.size = size
         self.colors = colors  # 可选颜色数组
-        self.board = np.concatenate([self.generate_board() for i in range(num)]) # 连接多个棋盘
+        self.board = np.concatenate([self.generate_board() for i in np.arange(board_num)])  # 连接多个棋盘
         self.move_dict = {}  # 记录每一步移动
-        self.round = 0  # 当前回合数
-        self.index=self.size*np.ones(self.size) #每列切片的起点索引
+        a = np.indices((self.size * board_num, self.size))
+        self.id_matrix = np.apply_along_axis(lambda x: f'r{x[0]:04d}c{x[1]:04d}', 0, a)
 
-    # 生成一个新棋盘，并保证该棋盘不存在连续三个相邻相同的颜色方块
     def generate_board(self):
-        '''
-        生成一个新的随机子棋盘，并且保证没有任何相邻元素的颜色相同。
-
-        返回值：
-        np.array：返回新生成的矩阵；
-        '''
-        a = np.concatenate([np.full((self.size // 2, self.size // 2), self.colors[i])
-            for i in range(4)]).reshape(self.size ** 2, 1)
-
+        a = np.concatenate([np.full((self.size // 2, self.size // 2), self.colors[i]) for i in np.arange(4)]).reshape(
+            (self.size ** 2, 1))
         np.random.shuffle(a)  # 打乱颜色块的顺序
         new_array = a.reshape(self.size, self.size)
-        '''
         while self.check(new_array):  # 检查是否存在连续三个相邻元素
             for i, j in self.check(new_array):
-                # 随机替换掉其中一个同色元素
-                new_array[i][j] = new_array[i - np.random.randint(1,self.size-1)][j - np.random.randint(1,self.size-1)]
-        '''
+                new_array[i][j] = new_array[i - random.randint(1, self.size - 1)][j - random.randint(1, self.size - 1)]
         return new_array
 
-    def current_board(self):
-        '''
-        返回当前棋盘的状态副本。
-
-        返回值：
-        np.array：返回当前棋盘的状态副本矩阵；
-        '''
-        return self.board.copy()
-
-    # 获取主要棋盘（size*size）
-    def main_board(self):
-        '''
-        返回当前棋盘的主要区域（正方形区域），长度为size的二维numpy数组。
-
-        返回值：
-        np.array: 返回当前棋盘状态下的主要区域。
-        '''
-        return self.board[:self.size, :self.size]
-
-    # 检查棋盘是否存在连续三个相邻的同色元素
     def check(self, array):
-        '''
-        返回在电路中重复的位置。
-
-        参数：
-        array: 以二维数组形式输入的元素列表；
-
-        返回值：
-        set: （i，j）位置集合，即 (i, j) 是重复位置。
-        '''
         repeats = set()
-        for i in range(1, self.size - 1):  # 遍历行
+        for i in np.arange(1, self.size - 1):  # 遍历行
             for j in np.arange(self.size):
                 a = array[i - 1:i + 2, j]
                 b = (a == array[i, j])
                 if np.sum(b) == 3:
                     repeats.add((i, j))
-        for i in range(1, self.size - 1):  # 遍历列
+        for i in np.arange(1, self.size - 1):  # 遍历列
             for j in np.arange(self.size):
                 a = array[j, i - 1:i + 2]
                 b = (a == array[j, i])
@@ -84,30 +38,21 @@ class Board:
                     repeats.add((j, i))
         return repeats
 
-    def move(self, row1, col1, row2, col2):
-        '''
-        在棋盘上移动两个颜色方块，并存储每一步操作。
+    def current_board(self):
+        return self.board.copy()
 
-        参数：
-        row1, col1: 第一块方块的行和列索引
-        row2, col2: 第二块方块的行和列索引
+    def peek_board(self):
+        return self.id_matrix
 
-        返回值：
-        list: 包含下面 4 个元素的切片列表
-            - 当前棋盘状态
-            - 第一块方块的坐标和颜色信息
-            - 第二块方块的坐标和颜色信息
-            - 移动后的新棋盘状态
-       '''
-        self.round += 1                                            # 当前回合数+1
-        self.move_dict[self.round] = [self.current_board(), (row1, col1, self.board[row1, col1]),
-                                      (row2, col2, self.board[row2, col2])]  # 记录此次操作前的棋盘和两个方块的信息
-        self.board[row1, col1], self.board[row2, col2] = self.board[row2, col2], self.board[row1, col1]   # 调换两个棋子
-        self.move_dict[self.round].append(self.current_board())     # 记录此次操作后的棋盘矩阵
-        return self.move_dict[self.round]                           # 返回当前操作的所有步骤，供后续检查和分析使用
+    def get_info(self):
+        pass
+
+    def change(self, x1, y1, x2, y2, *args):
+        self.board[[x1, y1], [x2, y2]] = self.board[[x2, y2], [x1, y1]]
+        self.id_matrix[[x1, y1], [x2, y2]] = self.id_matrix[[x2, y2], [x1, y1]]
 
     def scan_for_connected(self):
-        matrix=self.board
+        matrix = self.board
         visited = set()
         res = []
         for i in range(self.size):
@@ -132,12 +77,14 @@ class Board:
                             queue.append((x, y - 1))
                             visited.add((x, y - 1))
                     res.append(temp)
-        #用广搜获得所有主盘面上联通的元素，以[[(x11,y11),...,(x1n,y1n)],...,[(xn1,yn1),...,(xnn,ynn)]]的形式储存所有联通的瞳色元素
-        list_of_connected_elements = [sublst for sublst in res if any(len(set([coord[0] for coord in sublst[i:i + 3]])) == 1 and len(
-            set([coord[1] for coord in sublst[i:i + 3]])) == 3 or len(
-            set([coord[0] for coord in sublst[i:i + 3]])) == 3 and len(
-            set([coord[1] for coord in sublst[i:i + 3]])) == 1 for i in range(len(sublst) - 2))]
-        #筛选出所有在同一行（或列）有三个及以上连续元素的的联通元素组
+        # 用广搜获得所有主盘面上联通的元素，以[[(x11,y11),...,(x1n,y1n)],...,[(xn1,yn1),...,(xnn,ynn)]]的形式储存所有联通的瞳色元素
+        list_of_connected_elements = [sublst for sublst in res if
+                                      any(len(set([coord[0] for coord in sublst[i:i + 3]])) == 1 and len(
+                                          set([coord[1] for coord in sublst[i:i + 3]])) == 3 or len(
+                                          set([coord[0] for coord in sublst[i:i + 3]])) == 3 and len(
+                                          set([coord[1] for coord in sublst[i:i + 3]])) == 1 for i in
+                                          range(len(sublst) - 2))]
+        # 筛选出所有在同一行（或列）有三个及以上连续元素的的联通元素组
         return list_of_connected_elements
 
     def eliminate(self):
@@ -154,9 +101,11 @@ class Board:
 
         # 把所有的连续同色元素替换成“Q”,并以columns_eliminated（numpy array）返回每一列被消除的元素个数
         for i in range(self.size):
-            col = self.board[0:self.size,i]
-            indices=np.where(changed[:,i]==False)[0]
-            if len(indices)!=self.size:
-                self.board[0:self.size,i] =np.concatenate((col[indices],self.board[int(self.index[i]):int(self.index[i]+columns_eliminated[i]),i]))
+            col = self.board[0:self.size, i]
+            indices = np.where(changed[:, i] == False)[0]
+            if len(indices) != self.size:
+                self.board[0:self.size, i] = np.concatenate(
+                    (col[indices], self.board[int(self.index[i]):int(self.index[i] + columns_eliminated[i]), i]))
         # 索引主棋盘以外的和被消除部分等长的部分顺次填补主棋盘的空缺
         return score, columns_eliminated
+

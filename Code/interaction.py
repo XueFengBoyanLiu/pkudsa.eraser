@@ -16,6 +16,7 @@ import time
 import traceback
 import numpy as np
 import pandas as pd
+import json
 
 from config import *
 
@@ -140,5 +141,12 @@ class Game_play():
         history = pd.DataFrame(history, columns=['left', 'right'])
         history['relative'] = history['left'] - history['right']
         self.replay['scores'] = history.to_dict('list')
-        ## TODO: write replay.json file
+
+        filename = 'replay.json'
+        with open(filename, 'w') as f:
+            json.dump(self.replay, f)
         return
+
+if __name__ == '__main__':
+    tp = None
+    game = Game_play(tp, tp)

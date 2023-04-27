@@ -13,8 +13,17 @@
     
     <div id="side-display">
 
-      <div id="scores-graph">
-
+      <div id="scores-graph-section">
+        <div id="select-bar">
+          <div class="custom-select">
+            <select name="scores-mode" id="scores-mode">
+                <option value="difference">分 差</option>
+                <option value="raw">总得分</option>
+            </select>
+          </div>
+        </div>
+        <canvas id="scores-graph">
+        </canvas>
       </div>
     </div>
 

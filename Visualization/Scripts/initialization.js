@@ -304,12 +304,5 @@ function onSelectChange(newValue) {
 }
 
 
-// Initialize the Canvas and draw the coordinate system
-const canvas = document.getElementById("scores-graph");
-const ctx = canvas.getContext("2d");
-
-
-
-
 
 

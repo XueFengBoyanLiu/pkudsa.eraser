@@ -59,8 +59,8 @@
 /* General Styles */
 body{
   font-family: Arial, sans-serif;
-  display:flex;
-  flex-direction:row;
+  display:grid;
+  grid-template-columns: 1fr 4fr 1fr;
   align-items:center;
   justify-content:center;
 }
@@ -70,13 +70,17 @@ body{
   display:flex;
   flex-direction:row;
   justify-content:center;
-  
 }
 
+#side-display{
+  display: flex;
+  justify-content:center;
+  align-items:center;
+}
 
 /* Scores graph */
 #scores-graph-section{
- position:relative;
+  position:relative;
 }
 
 #scores-graph{
@@ -300,9 +304,13 @@ body{
   /* background: url(../photos/wallpaper.webp) no-repeat center center/ cover; */
 }
 
+#chartl,#chartr {
+  background-color: rgba(255, 255, 255, 0.6);
+}
 
-
-
+#chartr {
+  margin-top: 52px;
+}
 
 
 

@@ -297,9 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
 function onSelectChange(newValue) {
   console.log("Selected value changed to:", newValue);
   if (newValue==="difference"){
-
+    setChart("difference");
   } else if (newValue==="raw"){
-    
+    setChart("raw");
   }
 }
 

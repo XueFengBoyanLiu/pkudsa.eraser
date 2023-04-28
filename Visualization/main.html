@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualization</title>
-
-    <link rel="stylesheet" href="Styles/style.css">
     <script src="./lib/echarts.min.js"></script>
+    <link rel="stylesheet" href="Styles/style.css">
   </head>
 
 
@@ -23,8 +22,7 @@
             </select>
           </div>
         </div>
-        <canvas id="scores-graph">
-        </canvas>
+        <div id="chartl" style="width:15vw;height: 85vh;"></div>
       </div>
     </div>
 
@@ -94,7 +92,7 @@
           RedTeam<!--Substitue this with the real team name-->
         </h3>
         <div class="status">
-         <sapn class="text-of-status">落后</sapn>
+          <sapn class="text-of-status">落后</sapn>
         </div>
         <div class="total-scores">
           <div class="sidebar-header">总得分</div>
@@ -108,14 +106,15 @@
           <div class="sidebar-header">当前连消数</div>
           <div class="numbers">123131</div>
         </div>
-        <div class="placeholder"></div>
 
 
       </div>
     </div>
 
+    <div id="chartr" style="width:15vw;height: 85vh;"></div>
 
     <script src="Scripts/initialization.js"></script>
+    <script src="Scripts/chart.js"></script>
     <script src="Scripts/Ribbon.js"></script>
   </body>
 

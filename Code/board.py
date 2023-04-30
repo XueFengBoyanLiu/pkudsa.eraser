@@ -1,58 +1,157 @@
 import numpy as np
 import random
-import pandas as pd
 
 
 class Board:
     def __init__(self, size=8, board_num=1000, colors=np.array(['R', 'G', 'B', 'Y'])):
+        '''
+        Initialize board instance.
+
+        Parameters:
+        size(int): Size of each sub-board
+        board_num(int): Number of sub-boards in the main board
+        colors(np.array): Array of available colors
+        '''
         self.size = size
-        self.colors = colors  # 可选颜色数组
-        self.board = np.concatenate([self.generate_board() for i in np.arange(board_num)])  # 连接多个棋盘
-        self.move_dict = {}  # 记录每一步移动
+        self.board_num = board_num
+        self.colors = colors
+        self.board = np.concatenate([self.generate_board() for i in np.arange(board_num)])
+        self.move_dict = {}
+
+        # Use numpy.indices to create a matrix of row/column indices for each cell
         a = np.indices((self.size * board_num, self.size))
+        # Use numpy.apply_along_axis function to generate unique IDs for cells using row/column indices
         self.id_matrix = np.apply_along_axis(lambda x: f'r{x[0]:04d}c{x[1]:04d}', 0, a)
 
+        # Add ID matrix to the main board
+        self.board = np.dstack((self.board, self.id_matrix))
+        # Extract the first sub-board to use as the main board.
+        self.mainboard = self.board[:self.size, :self.size, 0]
+
     def generate_board(self):
+        '''
+        Generate a new sub-board.
+
+        Returns:
+        np.array: A new sub-board generated using the given rules.
+        '''
+        # Concatenate four color blocks, each of which has size*size/4 cells filled with the corresponding color.
         a = np.concatenate([np.full((self.size // 2, self.size // 2), self.colors[i]) for i in np.arange(4)]).reshape(
             (self.size ** 2, 1))
-        np.random.shuffle(a)  # 打乱颜色块的顺序
+        np.random.shuffle(a)  # Shuffle the order of color blocks.
+
+        # Reshape sub-board array using the shuffled colors.
         new_array = a.reshape(self.size, self.size)
-        while self.check(new_array):  # 检查是否存在连续三个相邻元素
+
+        # If there are three adjacent cells with the same color, randomly choose a different color for one of them
+        while self.check(new_array):
             for i, j in self.check(new_array):
                 new_array[i][j] = new_array[i - random.randint(1, self.size - 1)][j - random.randint(1, self.size - 1)]
+
+        # Return the generated sub-board.
         return new_array
 
     def check(self, array):
+        '''
+        Check if there are three adjacent cells in a sub-board that are filled with the same color.
+
+        Parameters:
+        array(np.array): A square sub-board array to be checked for repetition of colors.
+
+        Returns:
+        set: A set of tuples containing row and column indices of all cells that have three adjacent cells with
+             the same color.
+        '''
         repeats = set()
-        for i in np.arange(1, self.size - 1):  # 遍历行
+
+        # Traverse the rows
+        for i in np.arange(1, self.size - 1):
             for j in np.arange(self.size):
                 a = array[i - 1:i + 2, j]
                 b = (a == array[i, j])
                 if np.sum(b) == 3:
                     repeats.add((i, j))
-        for i in np.arange(1, self.size - 1):  # 遍历列
+
+        # Traverse the columns
+        for i in np.arange(1, self.size - 1):
             for j in np.arange(self.size):
                 a = array[j, i - 1:i + 2]
                 b = (a == array[j, i])
                 if np.sum(b) == 3:
                     repeats.add((j, i))
+
+        # Return a set of tuple(s) which contain the location(s) of cells whose neighbors share the same color.
         return repeats
 
     def current_board(self):
+        '''
+        Create a copy of the current sub-board.
+
+        Returns:
+        np.array: A new sub-board array identical to the current sub-board.
+        '''
         return self.board.copy()
 
     def peek_board(self):
-        return self.id_matrix
+        '''
+        Return a slice of the mainboard that displays the top portion of the current sub-board.
+
+        Returns:
+        np.array: A slice of the mainboard that shows the top part of the current sub-board with a buffer space on top.
+        '''
+        return self.board[:self.size + 2, :self.size, :]
 
     def get_info(self):
-        pass
+        '''
+        Get information about the current sub-board and possible operations to transform it into a valid sub-board.
 
-    def change(self, x1, y1, x2, y2, *args):
-        self.board[[x1, y1], [x2, y2]] = self.board[[x2, y2], [x1, y1]]
-        self.id_matrix[[x1, y1], [x2, y2]] = self.id_matrix[[x2, y2], [x1, y1]]
+        Returns:
+        list: A list consisting of two elements. The first element is the current sub-board array without any color
+              information. The second element is a list of all possible operations that can be performed on the
+              sub-board to make it valid.
+        '''
+        operations = []
+        for i in range(self.size - 1):
+            for j in range(self.size):
+                self.mainboard[[i, j], [i + 1, j]] = self.mainboard[[i + 1, j], [i, j]]
+                if self.check(self.mainboard):
+                    operations.append([(i, j), (i + 1, j)])
+                self.mainboard[[i + 1, j], [i, j]] = self.mainboard[[i, j], [i + 1, j]]
+        for j in range(self.size - 1):
+            for i in range(self.size):
+                self.mainboard[[i, j], [i, j + 1]] = self.mainboard[[i, j + 1], [i, j]]
+                if self.check(self.mainboard):
+                    operations.append([(i, j), (i, j + 1)])
+                self.mainboard[[i, j + 1], [i, j]] = self.mainboard[[i, j], [i, j + 1]]
+        return [self.board[:, :, 0], operations]
+
+    def change(self, loc1, loc2, *args):
+        '''
+        Exchange the colors of two adjacent cells in the current sub-board.
+
+        Parameters:
+        loc1(tuple): The coordinate (x,y) of one cell to be swapped.
+        loc2(tuple): The coordinate (x,y) of another cell to be swapped.
+        args: Optional additional parameters that can be ignored.
+
+        Returns:
+        None
+        '''
+        x1, y1 = loc1
+        x2, y2 = loc2
+        temp1 = self.board[x1, y1, :].copy()
+        temp2 = self.board[x2, y2, :].copy()
+        self.board[x1, y1, :], self.board[x2, y2, :] = temp2, temp1
 
     def scan_for_connected(self):
-        matrix = self.board
+        '''
+        Scan the mainboard for connected elements.
+
+        Returns:
+        list: A list of connected elements groups. Each group consists of elements with the same color that are
+              connected in a row or column and has three or more elements.
+        '''
+        matrix = self.board[:, :, 0]
         visited = set()
         res = []
         for i in range(self.size):
@@ -77,35 +176,52 @@ class Board:
                             queue.append((x, y - 1))
                             visited.add((x, y - 1))
                     res.append(temp)
-        # 用广搜获得所有主盘面上联通的元素，以[[(x11,y11),...,(x1n,y1n)],...,[(xn1,yn1),...,(xnn,ynn)]]的形式储存所有联通的瞳色元素
+        # Iterate through every element on the mainboard and perform a breadth-first search for connected elements.
+        # Store each group of connected elements in the res list.
         list_of_connected_elements = [sublst for sublst in res if
                                       any(len(set([coord[0] for coord in sublst[i:i + 3]])) == 1 and len(
                                           set([coord[1] for coord in sublst[i:i + 3]])) == 3 or len(
                                           set([coord[0] for coord in sublst[i:i + 3]])) == 3 and len(
                                           set([coord[1] for coord in sublst[i:i + 3]])) == 1 for i in
                                           range(len(sublst) - 2))]
-        # 筛选出所有在同一行（或列）有三个及以上连续元素的的联通元素组
+        # Filter out groups that have three or more connected elements in a row or column and return the list.
         return list_of_connected_elements
 
-    def eliminate(self):
-        list_of_connected_elements = self.scan_for_connected()
-        scorelist = list(map(lambda x: (len(x) - 2) ** 2, list_of_connected_elements))
-        score = sum(scorelist)
-        # 为了避免多次调用，在这里也顺便把分算了 score:int 总得分
-        changed = np.zeros((self.size, self.size), bool)
+    def eliminate(self, func=lambda x: (len(x) - 2) ** 2):
+        '''
+        Eliminates connected elements from the mainboard and calculates the score.
 
+        Args:
+        func (function): A function that takes in a group of connected elements and returns a score.
+
+        Returns:
+        tuple: A tuple that contains the total score (int) and the number of columns eliminated (array).
+        '''
+        # Scan the board for connected elements
+        list_of_connected_elements = self.scan_for_connected()
+
+        # Calculate the score for each connected element
+        scorelist = list(map(func, list_of_connected_elements))
+
+        # Calculate the total score
+        score = sum(scorelist)
+
+        # Mark the connected elements as changed
+        changed = np.zeros((self.size, self.size), bool)
         for sublst in list_of_connected_elements:
             for cordinates in sublst:
                 changed[cordinates] = True
-        columns_eliminated = self.size * np.mean(changed, axis=0)
 
-        # 把所有的连续同色元素替换成“Q”,并以columns_eliminated（numpy array）返回每一列被消除的元素个数
+        # Eliminate the columns with connected elements
+        columns_eliminated = np.sum(changed, axis=0)
         for i in range(self.size):
-            col = self.board[0:self.size, i]
+            col = self.board[0:self.size, i, :]
             indices = np.where(changed[:, i] == False)[0]
             if len(indices) != self.size:
-                self.board[0:self.size, i] = np.concatenate(
-                    (col[indices], self.board[int(self.index[i]):int(self.index[i] + columns_eliminated[i]), i]))
-        # 索引主棋盘以外的和被消除部分等长的部分顺次填补主棋盘的空缺
+                self.board[:, i, :] = np.concatenate(
+                    (col[indices, :], self.board[self.size:, i, :],
+                     np.full((columns_eliminated[i], 2), np.nan)), axis=0)
+
+        # Return the total score and the number of columns eliminated
         return score, columns_eliminated
 

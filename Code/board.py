@@ -178,12 +178,18 @@ class Board:
                     res.append(temp)
         # Iterate through every element on the mainboard and perform a breadth-first search for connected elements.
         # Store each group of connected elements in the res list.
-        list_of_connected_elements = [sublst for sublst in res if
-                                      any(len(set([coord[0] for coord in sublst[i:i + 3]])) == 1 and len(
-                                          set([coord[1] for coord in sublst[i:i + 3]])) == 3 or len(
-                                          set([coord[0] for coord in sublst[i:i + 3]])) == 3 and len(
-                                          set([coord[1] for coord in sublst[i:i + 3]])) == 1 for i in
-                                          range(len(sublst) - 2))]
+        list_of_connected_elements = []
+        for sublst in res:
+            lx=sorted(sorted(sublst, key=lambda x: x[1]), key=lambda x: x[0])
+            ly=sorted(sorted(sublst, key=lambda x: x[0]), key=lambda x: x[1])
+            for i in range(len(sublst)-2):
+                if sublst not in list_of_connected_elements and lx[i][0]==lx[i+1][0]==lx[i+2][0] and lx[i][1]+2==lx[i+1][1]+1==lx[i+2][1]:
+                    list_of_connected_elements.append(sublst)
+                    break
+            for j in range(len(sublst)-2):
+                if sublst not in list_of_connected_elements and ly[j][1]==ly[j+1][1]==ly[j+2][1] and ly[j][0]+2==ly[j+1][0]+1==ly[j+2][0]:
+                    list_of_connected_elements.append(sublst)
+                    break
         # Filter out groups that have three or more connected elements in a row or column and return the list.
         return list_of_connected_elements
 

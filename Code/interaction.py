@@ -20,6 +20,13 @@ import json
 
 from config import *
 
+def serialize_np(obj):
+    if isinstance(obj, np.int64):
+        return int(obj)
+    if isinstance(obj, np.ndarray):
+        return list(obj)
+    raise TypeError ("Type %s is not serializable" % type(obj))
+
 class Game_play():
     def __init__(self, player_1, player_2):
         '''
@@ -29,7 +36,6 @@ class Game_play():
         '''
         self.players = (Player_safe(player_1), Player_safe(player_2))
         self.terminated = False
-        self.winner = None
         # the players are wrapped by exception_manager.py
         self.board = Board()
         self.remained_blocks = [N_ROWS - BOARD_SIZE for i in range(BOARD_SIZE)]
@@ -40,6 +46,7 @@ class Game_play():
                 'scores': {},
                 'exitStatus': 0,
                 'errorMessage': '',
+                'winner': -1,
                 'frames': []}
 
         self.scores_history = []
@@ -71,45 +78,41 @@ class Game_play():
             self.end_game()
             return
         if self.turn >= MAX_TURN * 2:
-            self.end_game()
+            self.terminated = True
             return
 
         # update turn data
         self.turn += 1
         side = self.turn & 1
         current_player = self.players[side]
-        self.scores_history.append(self.score)
+        self.scores_history.append(self.score.copy())
         self.current_combo[side] = 0
+        print(f'perform turn {self.turn}, current player {side}')
 
         # make a move for the current player
         mv = self.ask_for_move(current_player)
         if current_player.error is not None:
             self.terminated = True
-            self.winner = self.players[1 - side]
-            self.replay['exitStatus'] = side
+            self.replay['winner'] = 1 - side
+            self.replay['exitStatus'] = 1
             self.replay['errorMessage'] = current_player.error
-            self.end_game()
             return
 
-        if not self.is_invalid_move(mv):
-            self.terminated = True
-            self.winner = self.players[1 - side]
-            self.end_game()
-            return
         self.board.change(*mv)
-
         self.record_frame()
 
         # eliminating blocks
         while True:
-            pts, columns_eliminated, is_end = self.board.eliminate()
+            pts, columns_eliminated = self.board.eliminate()
             if columns_eliminated.sum() == 0:
                 break
             self.remained_blocks = self.remained_blocks - columns_eliminated
             self.score[side] += pts
             self.current_combo[side] += columns_eliminated.sum()
+            print(self.current_combo)
             self.high_combo[side] = max(self.high_combo[side],
                     self.current_combo[side])
+
             self.record_frame()
 
     def ask_for_move(self, player):
@@ -117,7 +120,9 @@ class Game_play():
         Given current board, get a move from the current player
         Returns: ((x1, y1), (x2, y2))
         '''
-        return player('move', self.board.get_info())
+        if self.board.get_info()[1] == []:
+            print('no moves available')
+        return player('move', *self.board.get_info())
 
     def record_frame(self):
         '''
@@ -125,18 +130,31 @@ class Game_play():
         '''
         self.replay['totalFrames'] += 1
         board_status = self.board.peek_board()
+        if (board_status[:BOARD_SIZE, :BOARD_SIZE] == 'nan').any():
+            self.terminated = True
         frame = {'turnNumber': self.turn,
                 'currentPlayer': self.turn & 1,
                 'remainedBarStatus': self.remained_blocks}
-        frame['boardStatus'] = {board_status[i, j]: [i, j]
-                                    for i in range(n_rows)
-                                        for j in range (n_cols)}
+        frame['boardStatus'] = {board_status[i, j, 1]: [i, j]
+                                    for i in range(board_status.shape[0])
+                                        for j in range (board_status.shape[1])}
         frame['sideBarStatus'] = self.status
         self.replay['frames'].append(frame)
         return
 
+    def start_game(self):
+        print('Game starts')
+        while not self.terminated:
+            self.perform_turn()
+        self.end_game()
+
     def end_game(self):
         '''End the game and format the replay as .json file'''
+        self.terminated = True
+
+        if not self.replay['exitStatus']:
+            self.replay['winner'] = np.argmax(self.score)
+
         history = np.vstack(self.scores_history)
         history = pd.DataFrame(history, columns=['left', 'right'])
         history['relative'] = history['left'] - history['right']
@@ -144,9 +162,12 @@ class Game_play():
 
         filename = 'replay.json'
         with open(filename, 'w') as f:
-            json.dump(self.replay, f)
+            json.dump(self.replay, f, default = serialize_np)
+        print('Game ends')
         return
 
 if __name__ == '__main__':
-    tp = None
+    import test_bot
+    tp = test_bot.Robot()
     game = Game_play(tp, tp)
+    game.start_game()

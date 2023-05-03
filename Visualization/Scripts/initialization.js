@@ -13,7 +13,7 @@ const radiusGap=5;
 const graphWidth=260;
 const strokeWidth=1;
 
-const board=document.getElementById("board")
+const board=document.getElementById("board");
 
 const currentBoard={};
 
@@ -118,15 +118,17 @@ fileChooser.nextElementSibling.addEventListener('change',(event)=>{
 let totalRemains=300;
 initialization=function(record){
   // Global variables
- const {totalFrames,scores,exitStatus,errorMessage,winner,frames}=record;
- totalRemains=record.totalRemains/8;
- let currentFrame=0;
- setInterval(()=>{
-  if (currentFrame<totalFrames){
-    drawFrame(frames[currentFrame]);
-    currentFrame++;
-  }
- },800)
+  const {totalFrames,scores,exitStatus,errorMessage,winner,frames}=record;
+  totalRemains=record.totalRemains/8;
+  // leftTeamName=;
+  // rightTeamName=;
+  let currentFrame=0;
+  setInterval(()=>{
+    if (currentFrame<totalFrames){
+      drawFrame(frames[currentFrame]);
+      currentFrame++;
+    }
+  },800)
 }
 // Define a function to draw a frame
 
@@ -151,6 +153,8 @@ updateRemainedBar=function (remainedBarStatus) {
 }
 // Define a function to update the sidebars
 const sideBar=document.getElementsByClassName("sidebar");
+const leftTeamName=sideBar[0].querySelector('h3')
+const rightTeamName=sideBar[1].querySelector('h3')
 const leftItems = sideBar[0].querySelectorAll('div');
 const rightItems = sideBar[1].querySelectorAll('div');
   // Status Dictionary
@@ -224,7 +228,7 @@ updateBoard=function(boardStatus,team='unknown'){
 // Define a function to draw the score graph
 // WJS快来把这个函数写了
 updateScoreGraph=function(){
-
+  
 }
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////

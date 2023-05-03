@@ -42,7 +42,7 @@ class Game_play():
 
         self.turn = 0
         self.replay = {'totalFrames': 0,
-                'totalRemains': BOARD_SIZE * (N_ROWS - BOARD_SIZE),
+                'totalRemains': (N_ROWS - BOARD_SIZE),
                 'scores': {},
                 'exitStatus': 0,
                 'errorMessage': '',
@@ -80,6 +80,8 @@ class Game_play():
         if self.turn >= MAX_TURN * 2:
             self.terminated = True
             return
+        if (self.board.peek_board()[:BOARD_SIZE, :BOARD_SIZE] == 'nan').any():
+            self.terminated = True
 
         # update turn data
         self.turn += 1
@@ -130,12 +132,11 @@ class Game_play():
         '''
         self.replay['totalFrames'] += 1
         board_status = self.board.peek_board()
-        if (board_status[:BOARD_SIZE, :BOARD_SIZE] == 'nan').any():
-            self.terminated = True
         frame = {'turnNumber': self.turn,
                 'currentPlayer': self.turn & 1,
                 'remainedBarStatus': self.remained_blocks}
-        frame['boardStatus'] = {board_status[i, j, 1]: [i, j]
+        frame['boardStatus'] = {board_status[i, j, 1] + 'b' +
+                                COLORS[board_status[i, j, 0]]: [i, j]
                                     for i in range(board_status.shape[0])
                                         for j in range (board_status.shape[1])}
         frame['sideBarStatus'] = self.status

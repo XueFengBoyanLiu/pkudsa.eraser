@@ -275,22 +275,34 @@ body{
   height: calc(var(--unit-size) + var(--border-width)*2) ;
 
   padding: 0px var(--border-width);
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  /* display: grid;
+  grid-template-columns: repeat(8, 1fr); */
+  display:flex;
+  justify-content: space-around;
+  align-items: end;
 
   box-sizing: border-box;
 }
 
 #remained-bar-section .remained-bar-container{
+  /* width: fit-content; */
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: end;
+  background-color: rgb(170, 255, 166);
+
+  border-top-right-radius: 2px;
+  border-top-left-radius: 2px;
 }
 
 #remained-bar-section .remained-bar{
   width:calc(var(--unit-size) / 3);
   height: 60px;
   background-color: green;
+
+  border-top-right-radius: 2px;
+  border-top-left-radius: 2px;
 
   transition: 0.3s all;
 }

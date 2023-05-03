@@ -113,18 +113,18 @@ class Board:
         operations = []
         for i in range(self.size - 1):
             for j in range(self.size):
-                self.mainboard[[i, j], [i + 1, j]] = self.mainboard[[i + 1, j], [i, j]]
+                self.mainboard[i, j], self.mainboard[i + 1, j] = self.mainboard[i + 1, j], self.mainboard[i, j]
                 if self.check(self.mainboard):
                     operations.append([(i, j), (i + 1, j)])
-                self.mainboard[[i + 1, j], [i, j]] = self.mainboard[[i, j], [i + 1, j]]
+                self.mainboard[i, j], self.mainboard[i + 1, j] = self.mainboard[i + 1, j], self.mainboard[i, j]
         for j in range(self.size - 1):
             for i in range(self.size):
-                self.mainboard[[i, j], [i, j + 1]] = self.mainboard[[i, j + 1], [i, j]]
+                self.mainboard[i, j], self.mainboard[i, j + 1] = self.mainboard[i, j + 1], self.mainboard[i, j]
                 if self.check(self.mainboard):
                     operations.append([(i, j), (i, j + 1)])
-                self.mainboard[[i, j + 1], [i, j]] = self.mainboard[[i, j], [i, j + 1]]
+                self.mainboard[i, j], self.mainboard[i, j + 1] = self.mainboard[i, j + 1], self.mainboard[i, j]
         return [self.board[:, :, 0], operations]
-
+    
     def change(self, loc1, loc2, *args):
         '''
         Exchange the colors of two adjacent cells in the current sub-board.

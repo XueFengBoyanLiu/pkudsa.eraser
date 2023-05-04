@@ -8,7 +8,8 @@ class Random:
     def select(self, current_board, valid_movement):
         if valid_movement:
             return random.choice(valid_movement)
-        return (1, 1), (1, 2)
+        pos = (random.randint(1, 6), random.randint(1, 6))
+        return pos, (pos[0], pos[1]+1)
 
 
 class Robot:

@@ -1,14 +1,17 @@
 // Global variables
+const size=8;
+const preview=2;
+
 const width=400;
-const unitSize=width/8;
-const borderWidth=4;
+const unitSize=width/size;
+const borderWidth=unitSize/size;
 
 const remainedBarHeight=60;
 
-const blockGap=3.5;
-const blockBorderRadius=4;
+const blockGap=unitSize/10;
+const blockBorderRadius=unitSize/10;
 
-const radiusGap=5;
+const radiusGap=unitSize/9;
 
 const graphWidth=260;
 const strokeWidth=1;
@@ -187,21 +190,21 @@ updateBoard=function(boardStatus,team='unknown'){
     if (!(pieceId in currentBoard)){
       const piece=createPiece(pieceId,getColor(pieceId));
       currentBoard[pieceId]=piece;
-      moveTo(piece,7-boardStatus[pieceId][1],-2);
+      moveTo(piece,size-1-boardStatus[pieceId][1],-2);
       piece.style.display='block';
       board.appendChild(piece);
       // Make the piece to appear
       setTimeout(()=>{
         // piece.style.display='block';
         piece.classList.add('appearing');
-        moveTo(piece,7-boardStatus[pieceId][1],9-boardStatus[pieceId][0]);
+        moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
         setTimeout(()=>{
           piece.classList.remove('appearing');
         },300);
       },25);// The lag time here should be changed according to the play scale
     } else{
       const piece=currentBoard[pieceId];
-      moveTo(piece,7-boardStatus[pieceId][1],9-boardStatus[pieceId][0]);
+      moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
     }
   }
 //   for (let pieceId in boardStatus) {
@@ -238,14 +241,6 @@ updateScoreGraph=function(){
 function createTemplateBackgroundBlock(){
   let backgroundBlock=document.createElement("div");
   backgroundBlock.className="background-block";
-  backgroundBlock.style.position="absolute";
-  backgroundBlock.style.boxSizing="border-box";
-  backgroundBlock.style.width=`${unitSize - blockGap}px`;
-  backgroundBlock.style.height=`${unitSize - blockGap}px`;
-  backgroundBlock.style.borderRadius=`${blockBorderRadius}px`;
-
-  backgroundBlock.style.border="none";
-  backgroundBlock.style.zIndex="10";
   board.appendChild(backgroundBlock);
   return backgroundBlock;
 }
@@ -254,10 +249,10 @@ templateBackgroundBlock=createTemplateBackgroundBlock();
 
 // Define a function to initialize the gird on the board and run it
 function initializeGrid() {
-  for (let i=1;i<=10;i++) {
-    for (let j=1;j<=8;j++){
+  for (let i=1;i<=size+preview;i++) {
+    for (let j=1;j<=size;j++){
       let backgroundBlock=templateBackgroundBlock.cloneNode(true);
-      if (i<=2){
+      if (i<=preview){
         backgroundBlock.style.backgroundColor="white";
         backgroundBlock.style.opacity="0.9";
       } else{
@@ -274,25 +269,26 @@ function initializeGrid() {
 
 initializeGrid();
 
+const remainedSection=document.getElementById('remained-bar-section');
+// Define a function to initialize the remained bar
+function initializeRemainedBar(){
+  const remainedBarContainer=document.createElement('div');
+  remainedBarContainer.className='remained-bar-container';
+
+  const remainedBar=document.createElement('div');
+  remainedBar.className='remained-bar';
+  remainedBarContainer.appendChild(remainedBar);
+  remainedSection.appendChild(remainedBarContainer);
+}
+for (let i=0;i<size;i++){
+  initializeRemainedBar();
+}
+
 // Define a series of functions to create pieces with different colors
 
 function createTemplatePiece() {
   let piece=document.createElement("div");
   piece.className="piece";
-  piece.style.position="absolute";
-  piece.style.boxSizing="border-box";
-  piece.style.width=`${unitSize - blockGap -radiusGap}px`;
-  piece.style.height=`${unitSize - blockGap -radiusGap}px`;
-  piece.style.borderRadius=`50%`;
-  piece.style.zIndex="20";
-  piece.style.position="absolute"
-  piece.style.display="none";
-  piece.style.transition="all 0.3s ease-in";
-
-  piece.style.borderColor="white";
-  piece.style.borderStyle="solid";
-  piece.style.borderWidth="1px";
-  piece.style.boxShadow="0px 0px 4px 0px rgba(0,0,0,0.3)";
   return piece;
 }
 // Create a template piece
@@ -324,11 +320,11 @@ function eliminate(piece,team='unknown'){
   }
   ,300);// Need to be adjusted according to the play scale
   if (team==='unknown'){
-  piece.style.top=`${borderWidth + (10) * unitSize + blockGap/2+radiusGap / 2}px`;
+  piece.style.top=`${borderWidth + (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
   }else if (team==="left") {
   piece.style.left=`${borderWidth +  (-2) * unitSize + blockGap/2+radiusGap / 2}px`;
   } else if (team==="right") {
-  piece.style.left=`${borderWidth +  (10) * unitSize + blockGap/2+radiusGap / 2}px`;
+  piece.style.left=`${borderWidth +  (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
   }
 } 
 }
@@ -347,8 +343,8 @@ function moveTo(piece,x,y){
 /////////////////////////////////////////////////////////////////
 // A function for testing
 function test() {
-  for(i=0;i<8;i++){
-    for (j=0;j<10;j++){
+  for(i=0;i<size;i++){
+    for (j=0;j<size+preview;j++){
       let piece=createPiece(`r${j}c${i}`,colorArray[Math.floor(Math.random()*colorArray.length)]);
       piece.style.display='block';
       moveTo(piece,i,j);
@@ -407,6 +403,11 @@ function onSelectChange(newValue) {
   }
 }
 
+
+
+
+
+// For testing
 
 const a={"turnNumber": 0, "currentPlayer": 0, "remainedBarStatus": [292, 292, 292, 292, 292, 292, 292, 292], "boardStatus": {"r0000c0000": [0, 0], "r0000c0001": [0, 1], "r0000c0002": [0, 2], "r0000c0003": [0, 3], "r0000c0004": [0, 4], "r0000c0005": [0, 5], "r0000c0006": [0, 6], "r0000c0007": [0, 7], "r0001c0000": [1, 0], "r0001c0001": [1, 1], "r0001c0002": [1, 2], "r0001c0003": [1, 3], "r0001c0004": [1, 4], "r0001c0005": [1, 5], "r0001c0006": [1, 6], "r0001c0007": [1, 7], "r0002c0000": [2, 0], "r0002c0001": [2, 1], "r0002c0002": [2, 2], "r0002c0003": [2, 3], "r0002c0004": [2, 4], "r0002c0005": [2, 5], "r0002c0006": [2, 6], "r0002c0007": [2, 7], "r0003c0000": [3, 0], "r0003c0001": [3, 1], "r0003c0002": [3, 2], "r0003c0003": [3, 3], "r0003c0004": [3, 4], "r0003c0005": [3, 5], "r0003c0006": [3, 6], "r0003c0007": [3, 7], "r0004c0000": [4, 0], "r0004c0001": [4, 1], "r0004c0002": [4, 2], "r0004c0003": [4, 3], "r0004c0004": [4, 4], "r0004c0005": [4, 5], "r0004c0006": [4, 6], "r0004c0007": [4, 7], "r0005c0000": [5, 0], "r0005c0001": [5, 1], "r0005c0002": [5, 2], "r0005c0003": [5, 3], "r0005c0004": [5, 4], "r0005c0005": [5, 5], "r0005c0006": [5, 6], "r0005c0007": [5, 7], "r0006c0000": [6, 0], "r0006c0001": [6, 1], "r0006c0002": [6, 2], "r0006c0003": [6, 3], "r0006c0004": [6, 4], "r0006c0005": [6, 5], "r0006c0006": [6, 6], "r0006c0007": [6, 7], "r0007c0000": [7, 0], "r0007c0001": [7, 1], "r0007c0002": [7, 2], "r0007c0003": [7, 3], "r0007c0004": [7, 4], "r0007c0005": [7, 5], "r0007c0006": [7, 6], "r0007c0007": [7, 7], "r0008c0000": [8, 0], "r0008c0001": [8, 1], "r0008c0002": [8, 2], "r0008c0003": [8, 3], "r0008c0004": [8, 4], "r0008c0005": [8, 5], "r0008c0006": [8, 6], "r0008c0007": [8, 7], "r0009c0000": [9, 0], "r0009c0001": [9, 1], "r0009c0002": [9, 2], "r0009c0003": [9, 3], "r0009c0004": [9, 4], "r0009c0005": [9, 5], "r0009c0006": [9, 6], "r0009c0007": [9, 7]}, "sideBarStatus": {"left": {"totalScores": 0, "highestCombo": 0, "currentCombo": 0, "status": 0}, "right": {"totalScores": 0, "highestCombo": 0, "currentCombo": 0, "status": 0}}};
 

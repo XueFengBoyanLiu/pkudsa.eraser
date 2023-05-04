@@ -1,4 +1,8 @@
 /* Global variables */
+*{
+  --size: 8;
+  --preview: 2;
+}
 #left-sidebar{
   --teamcolor: rgb(5, 5, 153);
   --teamcolor2: rgb(5, 5, 153, 0.15);
@@ -13,21 +17,24 @@
 
 #middle-section{
   --width: 400px;
-  --unit-size: calc(var(--width) / 8);
-  --border-width: 4px;
+  --unit-size: calc(var(--width) / var(--size));
+  --border-width: calc(var(--unit-size) / var(--size));
 }
 
 .background-block{
-  --unit-size: calc(var(--width) / 8);
-  --block-gap: 3.5px;
-  --block-border-radius: 4px;
+  --unit-size: calc(var(--width) / var(--size));
+  --block-gap: calc(var(--unit-size) / 10);
+  --block-border-radius: calc(var(--unit-size) / 10);
 }
 
 .piece{
-  --unit-size: calc(var(--width) / 8);
-  --block-gap: 3.5px;
-  --block-border-radius: 4px;
-  --radius-gap: 2px;
+  --unit-size: calc(var(--width) / var(--size));
+  --block-gap: calc(var(--unit-size) / 10);
+  --block-border-radius: calc(var(--unit-size) / 10);
+  --radius-gap: calc(var(--unit-size) / 9);
+}
+#remained-bar-section{
+  --remained-bar-height: 60px;
 }
 
 #scores-graph-section{
@@ -264,15 +271,18 @@ body{
 
 
 #middle-section{
+  box-sizing: border-box;
   width: var(--width);
-  margin: 0px 8px;
+  margin: 0px 24px 0px 10px;
 }
 
 /* The remained bar section */
 
 #remained-bar-section{
   width: calc(var(--width) + var(--border-width) * 2);
-  height: calc(var(--unit-size) + var(--border-width)*2) ;
+  /* height: calc(var(--unit-size) + var(--border-width)*2) ;
+   */
+  height: var(--remained-bar-height);
 
   padding: 0px var(--border-width);
   /* display: grid;
@@ -298,7 +308,7 @@ body{
 
 #remained-bar-section .remained-bar{
   width:calc(var(--unit-size) / 3);
-  height: 60px;
+  height: var(--remained-bar-height);
   background-color: green;
 
   border-top-right-radius: 2px;
@@ -316,7 +326,7 @@ body{
 
 #middle-section #board{
   width: calc(var(--width) + var(--border-width) * 2);
-  height: calc(var(--unit-size)*10 + var(--border-width)*2);
+  height: calc(var(--unit-size) * calc(var(--size) + var(--preview)) + var(--border-width)*2);
 
   box-sizing: border-box;
   /* border-style: double; */
@@ -358,5 +368,29 @@ body{
 
 
 
+.background-block{
+  position: absolute;
+  box-sizing: border-box;
+  width: calc(var(--unit-size) - var(--block-gap));
+  height: calc(var(--unit-size) - var(--block-gap));
+  border-radius: var(--block-border-radius);
+  border:none;
+  z-index: 10;
+}
 
+.piece{
+  position:absolute;
+  box-sizing: border-box;
+  width: calc(var(--unit-size) - var(--block-gap) - var(--radius-gap));
+  height: calc(var(--unit-size) - var(--block-gap) - var(--radius-gap));
+  border-radius: 50%;
+  z-index: 20;
+  display: none;
+  transition: all 0.3s ease-in;
+
+  border-color: white;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.3);
+}
 

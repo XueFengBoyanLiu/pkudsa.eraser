@@ -307,7 +307,7 @@ body{
 }
 
 #remained-bar-section .remained-bar{
-  width:calc(var(--unit-size) / 3);
+  width:calc(var(--unit-size) / (2.2));
   height: var(--remained-bar-height);
   background-color: green;
 

@@ -28,56 +28,6 @@ const colorArray=["rgb(13, 211, 82)","rgb(22, 218, 224)","rgb(224, 134, 60)","rg
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
-// initial={
-//   totalFrames: 200,
-//   totalRemains: 90,
-//   scores: {
-//     absolute: {
-//       left: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-//       right : [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-//     },
-//     relative: [1,2,3,4,5,6,7,1,20] // Left minus Right
-//   },
-//   frames: [
-//     {
-//       currentPlayer: "leftTeam",
-//       remainedBarStatus: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-//       sidebarStatus:{
-//         left:{
-//           status: "领先", // "领先" "落后" "持平"
-//           totalScores: 100,
-//           highestCombo: 10,
-//           currentCombos: 5,
-//         },
-//         right:{
-//           status: "落后",
-//           totalScores: 90,
-//           highestCombo: 9,
-//           currentCombos: 4,
-//       boardStatus: {
-//         preboard: {
-//           r8c2: [1,2],
-//           r7c3: [2,3]
-//         },
-//         mainboard:{
-//           r3c5: [6,5],
-//           r2c7: [7,7],
-//         }
-//       }
-//         }
-//       }
-//     },
-//     {
-
-//     },
-//     {
-
-//     },
-//     {
-
-//     }
-//   ]
-// }
 
 // The file choser
 // Get the object
@@ -122,7 +72,7 @@ let totalRemains=300;
 initialization=function(record){
   // Global variables
   const {totalFrames,scores,exitStatus,errorMessage,winner,frames}=record;
-  totalRemains=record.totalRemains/8;
+  totalRemains=record.totalRemains;
   // leftTeamName=;
   // rightTeamName=;
   let currentFrame=0;
@@ -177,7 +127,7 @@ updateSideBar=function (sideBarStatus) {
 // Define a function to update the board
   // Define a function to get the color of a piece
   getColor=function(pieceId){
-    return 'red';
+    return colorArray[pieceId.slice(-1)];
   }
 updateBoard=function(boardStatus,team='unknown'){
   for (let pieceId in currentBoard){

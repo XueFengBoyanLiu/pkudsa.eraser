@@ -171,10 +171,10 @@ class Game_play():
     def log_data(self):
         '''Return the log data to server'''
         log = {'winner': self.replay['winner'],
-                'errorMessage': self.replay['errorMessage'],
+                'errorMessage': self.replay['errorMessage'].split('\n')[-2],
                 'errorStatus': self.replay['exitStatus'] - 1,
                 'length': self.turn,
-                'score': 1000
+                'score': 1000,
                 'reason': None}
         if not self.replay['exitStatus']:
             log['score'] = abs(self.score[0] - self.score[1])
@@ -206,6 +206,5 @@ if __name__ == '__main__':
     import failed_test_bot as fb
     bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
             fb.FailedRobot4(), fb.FailedRobot5()]
-    game = Game_play(tp, tp)
-    game.start_game()
-    print(game.log_data)
+    game = Game_runner(tp, bots[1])
+    print(game.start_games())

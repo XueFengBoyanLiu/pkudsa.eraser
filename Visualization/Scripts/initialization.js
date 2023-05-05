@@ -21,9 +21,15 @@ const board=document.getElementById("board");
 const currentBoard={};
 
 const player={0:'left',1:'right'}
-
-  // Green Blue Orange Pink Colors
+// Green Blue Orange Pink Colors
 const colorArray=["rgb(13, 211, 82)","rgb(22, 218, 224)","rgb(224, 134, 60)","rgb(243, 121, 137)"];
+
+
+// 烦人的接口!
+PLAYING_SPEED = 1;
+PLAYING_FPS = 1.25;
+// record_obj
+// TOTAL_FRAMES
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
@@ -76,6 +82,8 @@ initialization=function(record){
   // leftTeamName=;
   // rightTeamName=;
   let currentFrame=0;
+  initializeGraph(scores);
+  myChart.setOption(optionRelative);
   setInterval(()=>{
     if (currentFrame<totalFrames){
       drawFrame(frames[currentFrame]);
@@ -92,6 +100,7 @@ function drawFrame(frame) {
   updateRemainedBar(remainedBarStatus);
   updateSideBar(sideBarStatus);
   updateBoard(boardStatus,player[currentPlayer]);
+  
 }
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
@@ -179,7 +188,6 @@ updateBoard=function(boardStatus,team='unknown'){
 //   }  
 }
 // Define a function to draw the score graph
-// WJS快来把这个函数写了
 updateScoreGraph=function(){
   
 }
@@ -347,9 +355,9 @@ document.addEventListener('DOMContentLoaded', () => {
 function onSelectChange(newValue) {
   console.log("Selected value changed to:", newValue);
   if (newValue==="difference"){
-    setChart("difference");
+    myChart.setOption(optionRelative);
   } else if (newValue==="raw"){
-    setChart("raw");
+    myChart.setOption(optionAbsolute);
   }
 }
 
@@ -363,3 +371,235 @@ const a={"turnNumber": 0, "currentPlayer": 0, "remainedBarStatus": [292, 292, 29
 
 
 const c={"turnNumber": 13, "currentPlayer": 1, "remainedBarStatus": [272, 238, 192, 195, 207, 221, 247, 269], "boardStatus": {"r0010c0000": [0, 0], "r0044c0001": [0, 1], "r0092c0002": [0, 2], "r0094c0003": [0, 3], "r0079c0004": [0, 4], "r0067c0005": [0, 5], "r0042c0006": [0, 6], "r0022c0007": [0, 7], "r0012c0000": [1, 0], "r0046c0001": [1, 1], "r0096c0002": [1, 2], "r0095c0003": [1, 3], "r0082c0004": [1, 4], "r0070c0005": [1, 5], "r0046c0006": [1, 6], "r0023c0007": [1, 7], "r0013c0000": [2, 0], "r0055c0001": [2, 1], "r0101c0002": [2, 2], "r0098c0003": [2, 3], "r0084c0004": [2, 4], "r0072c0005": [2, 5], "r0047c0006": [2, 6], "r0025c0007": [2, 7], "r0021c0000": [3, 0], "r0056c0001": [3, 1], "r0102c0002": [3, 2], "r0100c0003": [3, 3], "r0085c0004": [3, 4], "r0073c0005": [3, 5], "r0048c0006": [3, 6], "r0026c0007": [3, 7], "r0024c0000": [4, 0], "r0058c0001": [4, 1], "r0104c0002": [4, 2], "r0089c0004": [4, 3], "r0101c0003": [4, 4], "r0074c0005": [4, 5], "r0049c0006": [4, 6], "r0027c0007": [4, 7], "r0025c0000": [5, 0], "r0059c0001": [5, 1], "r0105c0002": [5, 2], "r0102c0003": [5, 3], "r0090c0004": [5, 4], "r0076c0005": [5, 5], "r0050c0006": [5, 6], "r0028c0007": [5, 7], "r0026c0000": [6, 0], "r0060c0001": [6, 1], "r0106c0002": [6, 2], "r0103c0003": [6, 3], "r0091c0004": [6, 4], "r0077c0005": [6, 5], "r0051c0006": [6, 6], "r0029c0007": [6, 7], "r0027c0000": [7, 0], "r0061c0001": [7, 1], "r0107c0002": [7, 2], "r0104c0003": [7, 3], "r0092c0004": [7, 4], "r0078c0005": [7, 5], "r0052c0006": [7, 6], "r0030c0007": [7, 7], "r0028c0000": [8, 0], "r0062c0001": [8, 1], "r0108c0002": [8, 2], "r0105c0003": [8, 3], "r0093c0004": [8, 4], "r0079c0005": [8, 5], "r0053c0006": [8, 6], "r0031c0007": [8, 7], "r0029c0000": [9, 0], "r0063c0001": [9, 1], "r0109c0002": [9, 2], "r0106c0003": [9, 3], "r0094c0004": [9, 4], "r0080c0005": [9, 5], "r0054c0006": [9, 6], "r0032c0007": [9, 7]}, "sideBarStatus": {"left": {"totalScores": 359, "highestCombo": 103, "currentCombo": 103, "status": -1}, "right": {"totalScores": 772, "highestCombo": 109, "currentCombo": 0, "status": 1}}}
+
+
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+const dataCount = 55;
+const data = generateData(dataCount);
+const chartDom = document.getElementById("chart");
+const myChart = echarts.init(chartDom);
+
+
+function generateData(count) {
+  let baseValue = Math.random() * 1000;
+  let time = +new Date(2011, 0, 1);
+  let smallBaseValue;
+  function next(idx) {
+    smallBaseValue =
+      idx % 30 === 0
+        ? Math.random() * 700
+        : smallBaseValue + Math.random() * 500 - 250;
+    baseValue += Math.random() * 20 - 10;
+    return Math.max(0, Math.round(baseValue + smallBaseValue) + 3000);
+  }
+  const categoryData = [];
+  const valueData = [];
+  for (let i = 0; i < count; i++) {
+    categoryData.push(
+      echarts.format.formatTime('yyyy-MM-dd\nhh:mm:ss', time, false)
+    );
+    valueData.push(next(i).toFixed(2));
+    time += 1000;
+  }
+  return {
+    categoryData: categoryData,
+    valueData: valueData
+  };
+}
+// myChart.setOption(optionRelative);
+var optionRelative;
+var optionAbsolute;
+
+function initializeGraph(scores){
+  optionRelative = {
+    title: {
+      text: '相对分数',
+      left: 10
+    },
+    toolbox: {
+      feature: {
+        dataZoom: {
+          yAxisIndex: false
+        },
+        saveAsImage: {
+          pixelRatio: 2
+        }
+      }
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    grid: {
+      bottom: 90
+    },
+    dataZoom: [
+      {
+        type: 'inside',
+        yAxisIndex: [0]
+      },
+      {
+        type: 'slider',
+        yAxisIndex: [0]
+      }
+    ],
+    yAxis: {
+      // data: scores.relative,
+      // data:data.categoryData,
+      // data:data.relative,
+      
+      data:[0,...Array.from({length: scores.relative.length-1}, (_, i) => i + 1)],
+      
+      silent: false,
+      splitLine: {
+        show: false
+      },
+      splitArea: {
+        show: false
+      }
+    },
+    xAxis: {
+      splitArea: {
+        show: false
+      }
+    },
+    series: [
+      {
+        type: 'line',
+        // data: data.valueData,
+        data:scores.relative,
+        // Set `large` for large data amount
+        large: true,
+        itemStyle: {
+          color: 'rgb(255, 70, 131)'
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+              offset: 0,
+              color: 'rgb(255, 158, 68)'
+            },
+            {
+              offset: 1,
+              color: 'rgb(255, 70, 131)'
+            }
+          ])
+        },
+      },
+      {
+        type: 'none',
+      }
+    ]
+  };
+
+  optionAbsolute = {
+    title: {
+      text: '绝对分数',
+      left: 10
+    },
+    toolbox: {
+      feature: {
+        dataZoom: {
+          yAxisIndex: false
+        },
+        saveAsImage: {
+          pixelRatio: 2
+        }
+      }
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    grid: {
+      bottom: 90
+    },
+    dataZoom: [
+      {
+        type: 'inside',
+        yAxisIndex: [0]
+      },
+      {
+        type: 'slider',
+        yAxisIndex: [0]
+      }
+    ],
+    yAxis: {
+      data:[0,...Array.from({length: scores.right.length-1}, (_, i) => i + 1)],
+      
+      silent: false,
+      splitLine: {
+        show: false
+      },
+      splitArea: {
+        show: false
+      }
+    },
+    xAxis: {
+      splitArea: {
+        show: false
+      }
+    },
+    series: [
+      {
+        type: 'line',
+        // data: data.valueData,
+        data:scores.left,
+        // Set `large` for large data amount
+        large: true,
+        itemStyle: {
+          color: 'rgb(5, 5, 153)'
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+              offset: 0,
+              color: 'rgb(5, 5, 153, 0.15)'
+            },
+            {
+              offset: 1,
+              color: 'rgb(5, 5, 153, 0.4)'
+            }
+          ])
+        },
+      },
+      {
+        type: 'line',
+        // data: data.valueData,
+        data:scores.right,
+        // Set `large` for large data amount
+        large: true,
+        itemStyle: {
+          color: 'rgb(153, 5, 5)'
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+              offset: 0,
+              color: 'rgb(153, 5, 5, 0.15)'
+            },
+            {
+              offset: 1,
+              color: 'rgb(153, 5, 5, 0.4)'
+            }
+          ])
+        },
+      }
+    ]
+  };
+
+
+}
+
+// if (title==='相对分数'){
+//   myChart.setOption(optionRelative);
+// } else if (title==='绝对分数'){
+//   myChart.setOption(optionAbsolute);
+// }

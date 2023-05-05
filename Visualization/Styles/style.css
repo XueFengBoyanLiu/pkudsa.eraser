@@ -79,7 +79,7 @@
 body{
   font-family: Arial, sans-serif;
   display:grid;
-  grid-template-columns: 1fr 4fr 1fr;
+  grid-template-columns: 1fr 4fr;
   align-items:center;
   justify-content:center;
 }

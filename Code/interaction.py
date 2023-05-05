@@ -21,14 +21,14 @@ import json
 from config import *
 
 def serialize_np(obj):
-    if isinstance(obj, np.int64):
+    if isinstance(obj, (np.int64, np.int32)):
         return int(obj)
     if isinstance(obj, np.ndarray):
         return list(obj)
     raise TypeError ("Type %s is not serializable" % type(obj))
 
 class Game_play():
-    def __init__(self, player_1, player_2):
+    def __init__(self, player_1, player_2, board=None, file='replay.json'):
         '''
         Parameters
         ----------
@@ -37,8 +37,9 @@ class Game_play():
         self.players = (Player_safe(player_1), Player_safe(player_2))
         self.terminated = False
         # the players are wrapped by exception_manager.py
-        self.board = Board()
-        self.remained_blocks = [N_ROWS - BOARD_SIZE for i in range(BOARD_SIZE)]
+        self.board = Board() if board is None else board
+        self.remained_blocks = [N_ROWS - BOARD_SIZE for _ in range(BOARD_SIZE)]
+        self.output_file = file
 
         self.turn = 0
         self.replay = {'totalFrames': 0,
@@ -161,14 +162,50 @@ class Game_play():
         history['relative'] = history['left'] - history['right']
         self.replay['scores'] = history.to_dict('list')
 
-        filename = 'replay.json'
-        with open(filename, 'w') as f:
+        with open(self.output_file, 'w') as f:
             json.dump(self.replay, f, default = serialize_np)
         print('Game ends')
         return
 
+    @property
+    def log_data(self):
+        '''Return the log data to server'''
+        log = {'winner': self.replay['winner'],
+                'errorMessage': self.replay['errorMessage'],
+                'errorStatus': self.replay['exitStatus'] - 1,
+                'length': self.turn,
+                'score': 1000
+                'reason': None}
+        if not self.replay['exitStatus']:
+            log['score'] = abs(self.score[0] - self.score[1])
+            if self.turn < 2 * MAX_TURN:
+                log['reason'] = 'Run out of blocks'
+            else:
+                log['reason'] = 'Reach turn limit'
+        else:
+            log['reason'] = 'An error occurred during the game, see error message for details'
+        return log
+
+class Game_runner():
+    def __init__(self, p1, p2):
+        self.board = Board()
+        self.p1 = p1
+        self.p2 = p2
+    def start_games(self):
+        game1 = Game_play(self.p1, self.p2, board=self.board, file='replay_1.json')
+        game1.start_game()
+        game2 = Game_play(self.p2, self.p1, board=self.board, file='replay_2.json')
+        game2.start_game()
+        log1, log2 = game1.log_data, game2.log_data
+        log2['winner'] = 1 - log2['winner']
+        return log1, log2
+
 if __name__ == '__main__':
     import test_bot
     tp = test_bot.Robot()
+    import failed_test_bot as fb
+    bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
+            fb.FailedRobot4(), fb.FailedRobot5()]
     game = Game_play(tp, tp)
     game.start_game()
+    print(game.log_data)

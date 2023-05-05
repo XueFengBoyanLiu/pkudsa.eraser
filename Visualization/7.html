@@ -1,0 +1,42 @@
+{% extends 'renderer/base.html' %}
+{% load static %}
+{% load main_filters %}
+
+
+
+{% block css %}
+{{ block.super }}
+<style>
+
+</style>
+{% endblock %}
+
+
+{% block descriptions %}
+<div class='row x_block'>
+    <div class='col-sm-1' id='d_round'>回合</div>
+    <!-- <div class='col-sm-4' id='d_action'>动作</div>
+    <div class='col-sm-1' id='d_score'>得分</div> -->
+    <div class='col-sm-6' id='widget_group'>
+        <select name="scores-mode" id="scores-mode">
+            <option value="difference">分 差</option>
+            <option value="raw">总得分</option>
+        </select>
+    </div>
+</div>
+<div id="chart"></div>
+{% endblock %}
+
+
+{% block display_body %}
+<!-- Need something -->
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'lib/echarts.min.js' %}"></script>
+{{ block.super }}
+<script>
+
+</script>
+{% endblock %}
+

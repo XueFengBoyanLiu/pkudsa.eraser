@@ -7,7 +7,402 @@
 {% block css %}
 {{ block.super }}
 <style>
+/* Global variables */
+html{
+  --size: 8;
+  --preview: 2;
+  --PLAYING_SPEED: 1;
+}
+#left-sidebar{
+  --teamcolor: rgb(5, 5, 153);
+  --teamcolor2: rgb(5, 5, 153, 0.15);
+  --teamcolor3: rgb(5, 5, 153, 0.4);
+}
 
+#right-sidebar{
+  --teamcolor: rgb(153, 5, 5);
+  --teamcolor2: rgb(153, 5, 5, 0.15);
+  --teamcolor3: rgb(153, 5, 5, 0.4);
+}
+
+#middle-section{
+  --width: 400px;
+  --unit-size: calc(var(--width) / var(--size));
+  --border-width: calc(var(--unit-size) / var(--size));
+}
+
+.background-block{
+  --unit-size: calc(var(--width) / var(--size));
+  --block-gap: calc(var(--unit-size) / 10);
+  --block-border-radius: calc(var(--unit-size) / 10);
+}
+
+.piece{
+  --unit-size: calc(var(--width) / var(--size));
+  --block-gap: calc(var(--unit-size) / 10);
+  --block-border-radius: calc(var(--unit-size) / 10);
+  --radius-gap: calc(var(--unit-size) / 9);
+}
+#remained-bar-section{
+  --remained-bar-height: 60px;
+}
+
+#scores-graph-section{
+  --graph-width:260px;
+}
+
+#file-chooser, #folder-chooser{
+  --background-color: orangered;
+  --color:white;
+}
+#file-chooser, #folder-chooser{
+  /* Change the font size to control the total size */
+  --font-size:16px;
+}
+/* Animations */
+/* Animation for a piece to be eliminated */
+@keyframes eliminate{
+  0%{
+    transform: scale(1);
+  }
+  50%{
+    transform: scale(1.5);
+  }
+  /* 50%{
+    transform: scale(0.2);
+  } */
+  100%{
+    transform: scale(0);
+  }
+}
+
+.eliminated{
+  animation: eliminate 0.3s ease-in;
+  animation-fill-mode: forwards;
+}
+.appearing{
+  animation: eliminate 0.3s ease-out reverse;
+  animation-fill-mode: backwards;
+}
+
+/* General Styles */
+body{
+  font-family: Arial, sans-serif;
+  display:grid;
+  grid-template-columns: 1fr 4fr;
+  align-items:center;
+  justify-content:center;
+}
+
+
+#main-display{
+  display:flex;
+  flex-direction:row;
+  justify-content:center;
+}
+
+#side-display{
+  display: flex;
+  justify-content:center;
+  align-items:center;
+}
+
+/* Scores graph */
+#scores-graph-section{
+  position:relative;
+}
+
+#scores-graph{
+  width:var(--graph-width);
+  height: 500px;
+  position:relative;
+}
+
+/* Written by GPT-4 to style the select dorpdown */
+#select-bar{
+  margin-bottom: 10px;
+
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+
+.custom-select {
+  position: relative;
+  display: inline-block;
+  width: 110px;
+  padding: 0;
+  margin: 0;
+}
+
+.custom-select select {
+  display: none;
+}
+
+.select-selected {
+  background-color: #3a3a3a;
+  color: #fff;
+  padding: 10px 0px;
+  cursor: pointer;
+  border: none;
+  /* border-radius: 4px; */
+  font-size: 1.2em;
+  font-weight: bold;
+  text-align: center;
+  user-select: none;
+  transition: background-color 0.2s ease;
+
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+}
+
+.select-selected:hover {
+  background-color: #5a5a5a;
+}
+
+.select-items {
+  position: absolute;
+  background-color: #3a3a3a;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  max-height: 200px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.select-items div {
+  color: #fff;
+  text-align: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.select-items div:hover {
+  background-color: #5a5a5a;
+}
+
+.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/*  */
+
+
+
+
+/* Two sidebars for each team to show their scores */
+/* Some variables */
+
+
+#left-sidebar,#right-sidebar{
+  color:var(--teamcolor);
+
+  width:120px;
+
+  border-color: var(--teamcolor);
+  border-style: solid;
+  border-width: 0px;
+  border-radius: 4px;
+
+  background-color: var(--teamcolor2);
+  padding:2px;
+  margin-right:10px;
+  margin-left:10px;
+
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content: space-between;
+}
+
+
+/* Items in sidebars */
+  .sidebar .team-name{
+    word-break:break-all;
+
+    width:120px;
+    height: 55px;
+    font-size: 1.5em;
+    color:var(--teamcolor);
+    text-align: center;
+    margin-top: 0.5em;
+    margin-bottom: 0em;
+  }
+
+  .sidebar .status{
+    margin-top:-30px;
+
+    font-weight: bold;
+
+    display:flex;
+    background-color: rgb(244, 244, 244);
+    justify-content: center;
+    align-items: center;
+    height:6em;
+    width:6em;
+    border-radius: 50%;
+    border-style: solid;
+    border-color: var(--teamcolor);
+    border-width: 3px;
+
+    box-shadow: 0 0 10px var(--teamcolor3);
+  }
+    .sidebar .status .text-of-status{
+    font-size:2em;
+
+  }
+  .sidebar .sidebar-header{
+    /*margin-top:2.5em;*/
+    text-align: center;
+    font-size:1.5em;
+    font-weight: bold;
+  }
+  .sidebar .numbers{
+    margin-top: 8px;
+    text-align: center;
+    font-size:1.5em;
+    font-weight: bold;
+  }
+
+
+
+/* The middle section */
+/* Some variables */
+
+
+#middle-section{
+  box-sizing: border-box;
+  width: var(--width);
+  margin: 0px 24px 0px 10px;
+}
+
+/* The remained bar section */
+
+#remained-bar-section{
+  width: calc(var(--width) + var(--border-width) * 2);
+  /* height: calc(var(--unit-size) + var(--border-width)*2) ;
+   */
+  height: var(--remained-bar-height);
+
+  padding: 0px var(--border-width);
+  /* display: grid;
+  grid-template-columns: repeat(8, 1fr); */
+  display:flex;
+  justify-content: space-around;
+  align-items: end;
+
+  box-sizing: border-box;
+}
+
+#remained-bar-section .remained-bar-container{
+  /* width: fit-content; */
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  background-color: rgb(170, 255, 166);
+
+  border-top-right-radius: 2px;
+  border-top-left-radius: 2px;
+}
+
+#remained-bar-section .remained-bar{
+  width:calc(var(--unit-size) / (2.2));
+  height: var(--remained-bar-height);
+  background-color: green;
+
+  border-top-right-radius: 2px;
+  border-top-left-radius: 2px;
+
+  transition: calc(0.3s / var(--PLAYING_SPEED)) all;
+}
+
+/* The board*/
+
+#middle-section #board{
+  position:relative;
+}
+
+
+#middle-section #board{
+  width: calc(var(--width) + var(--border-width) * 2);
+  height: calc(var(--unit-size) * calc(var(--size) + var(--preview)) + var(--border-width)*2);
+
+  box-sizing: border-box;
+  /* border-style: double; */
+  /* border-width: var(--border-width); */
+
+  border-radius: 12px;
+
+  background: url(../photos/beautifulBlue.jpg) no-repeat center center/ cover;
+  /* background: url(../photos/wallpaper.webp) no-repeat center center/ cover; */
+}
+/* File chooser */
+#file-chooser, #folder-chooser{
+  font-weight: bold;
+  padding:0.26em 0.4em;
+  border-radius: 0.2em;   
+  transition:all 0.1s ease-in-out;
+  box-shadow: 0px 0px 4px 1px rgba(0,0,0,0.3);
+  width:fit-content;
+  height: fit-content;
+
+  background-color: var(--background-color);
+  color:var(--color);
+  font-size: var(--font-size);
+}
+#file-chooser:hover, #folder-chooser:hover{
+  cursor:pointer;
+  opacity: 0.75;
+  font-size: calc(var(--font-size) * 1.02);
+}
+
+#chartl,#chartr {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+#chartr {
+  margin-top: 52px;
+}
+
+
+
+
+.background-block{
+  position: absolute;
+  box-sizing: border-box;
+  width: calc(var(--unit-size) - var(--block-gap));
+  height: calc(var(--unit-size) - var(--block-gap));
+  border-radius: var(--block-border-radius);
+  border:none;
+  z-index: 10;
+}
+
+.piece{
+  position:absolute;
+  box-sizing: border-box;
+  width: calc(var(--unit-size) - var(--block-gap) - var(--radius-gap));
+  height: calc(var(--unit-size) - var(--block-gap) - var(--radius-gap));
+  border-radius: 50%;
+  z-index: 20;
+  display: none;
+  transition: all calc(0.3s / var(--PLAYING_SPEED)) ease-in;
+
+  border-color: white;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.3);
+}
 </style>
 {% endblock %}
 
@@ -18,10 +413,14 @@
     <!-- <div class='col-sm-4' id='d_action'>动作</div>
     <div class='col-sm-1' id='d_score'>得分</div> -->
     <div class='col-sm-6' id='widget_group'>
-        <select name="scores-mode" id="scores-mode">
-            <option value="difference">分 差</option>
-            <option value="raw">总得分</option>
-        </select>
+        <div id="select-bar">
+            <div class="custom-select">
+              <select name="scores-mode" id="scores-mode">
+                  <option value="difference">分 差</option>
+                  <option value="raw">总得分</option>
+              </select>
+            </div>
+          </div>
     </div>
 </div>
 <div id="chart"></div>
@@ -29,13 +428,588 @@
 
 
 {% block display_body %}
-<!-- Need something -->
+<div id="side-display">
+    <div id="scores-graph-section">
+      <div id="chart" style="width:200px;height: 80vh;"></div>
+    </div>
+  </div>
+
+  <div id="main-display">
+    <div class="sidebar" id="left-sidebar">
+      <h3 class="team-name">
+        BlueTeam<!--Substitue this with the real team name-->
+      </h3>
+      <div class="status">
+        <sapn class="text-of-status">持平</sapn>
+      </div>
+      <div class="total-scores">
+        <div class="sidebar-header">总得分</div>
+        <div class="numbers">0</div>
+      </div>
+      <div class="highest-combo">
+        <div class="sidebar-header">最高连消数</div>
+        <div class="numbers">0</div>
+      </div>
+      <div class="current-combos">
+        <div class="sidebar-header">当前连消数</div>
+        <div class="numbers">0</div>
+      </div>
+      <div class="placeholder"></div>
+
+    </div>
+    <div id="middle-section">
+      <div id="remained-bar-section">
+      </div>
+      <div id="board">
+      </div>
+    </div>
+    <div class="sidebar" id="right-sidebar">
+      <h3 class="team-name">
+        RedTeam<!--Substitue this with the real team name-->
+      </h3>
+      <div class="status">
+        <sapn class="text-of-status">持平</sapn>
+      </div>
+      <div class="total-scores">
+        <div class="sidebar-header">总得分</div>
+        <div class="numbers">0</div>
+      </div>
+      <div class="highest-combo">
+        <div class="sidebar-header">最高连消数</div>
+        <div class="numbers">0</div>
+      </div>
+      <div class="current-combos">
+        <div class="sidebar-header">当前连消数</div>
+        <div class="numbers">0</div>
+      </div>
+      <div class="placeholder"></div>
+
+    </div>
+
+  </div>
 {% endblock %}
 
 {% block script %}
 <script src="{% static 'lib/echarts.min.js' %}"></script>
 {{ block.super }}
 <script>
+// Global variables
+const size=8;
+const preview=2;
+
+const width=400;
+const unitSize=width/size;
+const borderWidth=unitSize/size;
+
+const remainedBarHeight=60;
+
+const blockGap=unitSize/10;
+const blockBorderRadius=unitSize/10;
+
+const radiusGap=unitSize/9;
+
+const graphWidth=260;
+const strokeWidth=1;
+
+const board=document.getElementById("board");
+
+const currentBoard={};
+
+const player={0:'left',1:'right'}
+// Green Blue Orange Pink Colors
+const colorArray=["rgb(13, 211, 82)","rgb(22, 218, 224)","rgb(224, 134, 60)","rgb(243, 121, 137)"];
+
+
+// 烦人的接口!
+PLAYING_SPEED = 1;
+PLAYING_FPS = 1.25;
+record=record_obj;
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+// Define the initialization function
+let totalRemains,totalFrames,scores,exitStatus,errorMessage,winner,frames;
+init=function(record){
+  // Global variables
+  totalFrames=record.totalFrames;
+  scores=record.scores;
+  exitStatus=record.exitStatus;
+  errorMessage=record.errorMessage;
+  winner=record.winner;
+  frames=record.frames;
+
+  TOTAL_FRAMES=totalFrames;
+  totalRemains=record.totalRemains;
+  // leftTeamName=;
+  // rightTeamName=;
+  initializeGraph(scores);
+  myChart.setOption(optionRelative);
+}
+// Define a function to draw a frame
+
+function draw_frame(idx) {
+  // Global variables
+  const {turnNumber,currentPlayer,remainedBarStatus,boardStatus,sideBarStatus}=frames[idx];
+
+  document.documentElement.style.setProperty('--PLAYING_SPEED', PLAYING_SPEED);
+
+  updateRemainedBar(remainedBarStatus);
+  updateSideBar(sideBarStatus);
+  updateBoard(boardStatus,player[currentPlayer]);
+  
+}
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+// Define a function to draw the remained bar
+const remainedBar=document.getElementsByClassName("remained-bar");
+updateRemainedBar=function (remainedBarStatus) {
+  for (i=0;i<remainedBarStatus.length;i++) {
+    remainedBar[i].style.height=`${remainedBarStatus[i] / totalRemains * remainedBarHeight}px`;
+  }
+}
+// Define a function to update the sidebars
+const sideBar=document.getElementsByClassName("sidebar");
+const leftTeamName=sideBar[0].querySelector('h3')
+const rightTeamName=sideBar[1].querySelector('h3')
+const leftItems = sideBar[0].querySelectorAll('div');
+const rightItems = sideBar[1].querySelectorAll('div');
+  // Status Dictionary
+const statusDictionary={0:'持平',1:'领先','-1':'落后'}
+  // NodeList(11) [div.status, div.total-scores, div.sidebar-header, div.numbers, div.highest-combo, div.sidebar-header, div.numbers, div.current-combos, div.sidebar-header, div.numbers, div.placeholder]
+updateSideBar=function (sideBarStatus) {
+  leftItems[0].children[0].innerText=statusDictionary[sideBarStatus.left.status];
+  leftItems[3].innerText=sideBarStatus.left.totalScores;
+  leftItems[6].innerText=sideBarStatus.left.highestCombo;
+  leftItems[9].innerText=sideBarStatus.left.currentCombo;
+
+  rightItems[0].children[0].innerText=statusDictionary[sideBarStatus.right.status];
+  rightItems[3].innerText=sideBarStatus.right.totalScores;
+  rightItems[6].innerText=sideBarStatus.right.highestCombo;
+  rightItems[9].innerText=sideBarStatus.right.currentCombo;
+}
+// Define a function to update the board
+  // Define a function to get the color of a piece
+  getColor=function(pieceId){
+    return colorArray[pieceId.slice(-1)];
+  }
+updateBoard=function(boardStatus,team='unknown'){
+  for (let pieceId in currentBoard){
+    if (!(pieceId in boardStatus)){
+      eliminate(currentBoard[pieceId],team);
+      delete currentBoard[pieceId];
+    }
+  }
+  for (let pieceId in boardStatus){
+    if (!(pieceId in currentBoard)){
+      const piece=createPiece(pieceId,getColor(pieceId));
+      currentBoard[pieceId]=piece;
+      moveTo(piece,size-1-boardStatus[pieceId][1],-2);
+      piece.style.display='block';
+      board.appendChild(piece);
+      // Make the piece to appear
+      setTimeout(()=>{
+        // piece.style.display='block';
+        piece.classList.add('appearing');
+        moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+        setTimeout(()=>{
+          piece.classList.remove('appearing');
+        },300/PLAYING_SPEED);
+      },25/PLAYING_SPEED);// The lag time here should be changed according to the play scale
+    } else{
+      const piece=currentBoard[pieceId];
+      moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+    }
+  }
+}
+// Define a function to draw the score graph
+updateScoreGraph=function(){
+  
+}
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+// Create a template background block
+function createTemplateBackgroundBlock(){
+  let backgroundBlock=document.createElement("div");
+  backgroundBlock.className="background-block";
+  board.appendChild(backgroundBlock);
+  return backgroundBlock;
+}
+
+templateBackgroundBlock=createTemplateBackgroundBlock();
+
+// Define a function to initialize the gird on the board and run it
+function initializeGrid() {
+  for (let i=1;i<=size+preview;i++) {
+    for (let j=1;j<=size;j++){
+      let backgroundBlock=templateBackgroundBlock.cloneNode(true);
+      if (i<=preview){
+        backgroundBlock.style.backgroundColor="white";
+        backgroundBlock.style.opacity="0.9";
+      } else{
+        backgroundBlock.style.backgroundColor="white";
+        backgroundBlock.style.opacity="0.2";
+      }
+      backgroundBlock.style.left=`${borderWidth + (j-1) * unitSize + blockGap/2}px`;
+      backgroundBlock.style.top=`${borderWidth + (i-1) * unitSize + blockGap/2}px`;
+
+      board.appendChild(backgroundBlock);
+    }
+  }
+}  
+
+initializeGrid();
+
+const remainedSection=document.getElementById('remained-bar-section');
+// Define a function to initialize the remained bar
+function initializeRemainedBar(){
+  const remainedBarContainer=document.createElement('div');
+  remainedBarContainer.className='remained-bar-container';
+
+  const remainedBar=document.createElement('div');
+  remainedBar.className='remained-bar';
+  remainedBarContainer.appendChild(remainedBar);
+  remainedSection.appendChild(remainedBarContainer);
+}
+for (let i=0;i<size;i++){
+  initializeRemainedBar();
+}
+
+// Define a series of functions to create pieces with different colors
+
+function createTemplatePiece() {
+  let piece=document.createElement("div");
+  piece.className="piece";
+  return piece;
+}
+// Create a template piece
+const templatePiece=createTemplatePiece()
+
+// Create a piece with certain id and color
+function createPiece(id,color) {
+  let piece=templatePiece.cloneNode(true);
+  piece.id=id;
+  piece.style.backgroundColor=color;
+  return piece;
+}
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+// Define a function to remove a piece
+function remove(piece){
+  piece.remove();
+}
+// Define a function to eliminate a piece
+function eliminate(piece,team='unknown'){
+  if (piece.style.display === "none") {
+    return;
+  } else{
+  piece.classList.add("eliminated");
+  piece.style.zIndex='30';
+  setTimeout(function(){
+    remove(piece);
+  }
+  ,300/PLAYING_SPEED);// Need to be adjusted according to the play scale
+  if (team==='unknown'){
+  piece.style.top=`${borderWidth + (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
+  }else if (team==="left") {
+  piece.style.left=`${borderWidth +  (-2) * unitSize + blockGap/2+radiusGap / 2}px`;
+  } else if (team==="right") {
+  piece.style.left=`${borderWidth +  (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
+  }
+} 
+}
+
+// Define a function to move a piece
+function moveTo(piece,x,y){
+  piece.style.left=`${borderWidth + (x) * unitSize + blockGap/2+radiusGap / 2}px`;
+  piece.style.top=`${borderWidth + (y) * unitSize + blockGap/2+radiusGap / 2}px`;
+  // if (piece.style.display==="none") {
+  //   piece.style.display="block";
+  // }
+}
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+// A function for testing
+function test() {
+  for(i=0;i<size;i++){
+    for (j=0;j<size+preview;j++){
+      let piece=createPiece(`r${j}c${i}`,colorArray[Math.floor(Math.random()*colorArray.length)]);
+      piece.style.display='block';
+      moveTo(piece,i,j);
+      board.appendChild(piece);
+    }
+  }
+}
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+// Event listener for the select dropdown (written by GPT-4)
+document.addEventListener('DOMContentLoaded', () => {
+  const selectElement = document.getElementById('scores-mode');
+  const customSelect = selectElement.parentElement;
+
+  const selected = document.createElement('div');
+  selected.className = 'select-selected';
+  selected.textContent = selectElement.options[selectElement.selectedIndex].textContent;
+  customSelect.appendChild(selected);
+
+  const itemsContainer = document.createElement('div');
+  itemsContainer.className = 'select-items';
+  customSelect.appendChild(itemsContainer);
+
+  for (const option of selectElement.options) {
+      const item = document.createElement('div');
+      item.textContent = option.textContent;
+      item.addEventListener('click', () => {
+          selectElement.value = option.value;
+          selected.textContent = option.textContent;
+          itemsContainer.classList.remove('show');
+          onSelectChange(option.value);
+      });
+      itemsContainer.appendChild(item);
+  }
+
+  selected.addEventListener('click', () => {
+      itemsContainer.classList.toggle('show');
+  });
+
+  document.addEventListener('click', (event) => {
+      if (!customSelect.contains(event.target)) {
+          itemsContainer.classList.remove('show');
+      }
+  });
+});
+
+// Define a function to handle the change in the selected option
+function onSelectChange(newValue) {
+  console.log("Selected value changed to:", newValue);
+  if (newValue==="difference"){
+    myChart.setOption(optionRelative);
+  } else if (newValue==="raw"){
+    myChart.setOption(optionAbsolute);
+  }
+}
+
+
+
+
+
+// For testing
+
+const a={"turnNumber": 0, "currentPlayer": 0, "remainedBarStatus": [292, 292, 292, 292, 292, 292, 292, 292], "boardStatus": {"r0000c0000": [0, 0], "r0000c0001": [0, 1], "r0000c0002": [0, 2], "r0000c0003": [0, 3], "r0000c0004": [0, 4], "r0000c0005": [0, 5], "r0000c0006": [0, 6], "r0000c0007": [0, 7], "r0001c0000": [1, 0], "r0001c0001": [1, 1], "r0001c0002": [1, 2], "r0001c0003": [1, 3], "r0001c0004": [1, 4], "r0001c0005": [1, 5], "r0001c0006": [1, 6], "r0001c0007": [1, 7], "r0002c0000": [2, 0], "r0002c0001": [2, 1], "r0002c0002": [2, 2], "r0002c0003": [2, 3], "r0002c0004": [2, 4], "r0002c0005": [2, 5], "r0002c0006": [2, 6], "r0002c0007": [2, 7], "r0003c0000": [3, 0], "r0003c0001": [3, 1], "r0003c0002": [3, 2], "r0003c0003": [3, 3], "r0003c0004": [3, 4], "r0003c0005": [3, 5], "r0003c0006": [3, 6], "r0003c0007": [3, 7], "r0004c0000": [4, 0], "r0004c0001": [4, 1], "r0004c0002": [4, 2], "r0004c0003": [4, 3], "r0004c0004": [4, 4], "r0004c0005": [4, 5], "r0004c0006": [4, 6], "r0004c0007": [4, 7], "r0005c0000": [5, 0], "r0005c0001": [5, 1], "r0005c0002": [5, 2], "r0005c0003": [5, 3], "r0005c0004": [5, 4], "r0005c0005": [5, 5], "r0005c0006": [5, 6], "r0005c0007": [5, 7], "r0006c0000": [6, 0], "r0006c0001": [6, 1], "r0006c0002": [6, 2], "r0006c0003": [6, 3], "r0006c0004": [6, 4], "r0006c0005": [6, 5], "r0006c0006": [6, 6], "r0006c0007": [6, 7], "r0007c0000": [7, 0], "r0007c0001": [7, 1], "r0007c0002": [7, 2], "r0007c0003": [7, 3], "r0007c0004": [7, 4], "r0007c0005": [7, 5], "r0007c0006": [7, 6], "r0007c0007": [7, 7], "r0008c0000": [8, 0], "r0008c0001": [8, 1], "r0008c0002": [8, 2], "r0008c0003": [8, 3], "r0008c0004": [8, 4], "r0008c0005": [8, 5], "r0008c0006": [8, 6], "r0008c0007": [8, 7], "r0009c0000": [9, 0], "r0009c0001": [9, 1], "r0009c0002": [9, 2], "r0009c0003": [9, 3], "r0009c0004": [9, 4], "r0009c0005": [9, 5], "r0009c0006": [9, 6], "r0009c0007": [9, 7]}, "sideBarStatus": {"left": {"totalScores": 0, "highestCombo": 0, "currentCombo": 0, "status": 0}, "right": {"totalScores": 0, "highestCombo": 0, "currentCombo": 0, "status": 0}}};
+
+
+const c={"turnNumber": 13, "currentPlayer": 1, "remainedBarStatus": [272, 238, 192, 195, 207, 221, 247, 269], "boardStatus": {"r0010c0000": [0, 0], "r0044c0001": [0, 1], "r0092c0002": [0, 2], "r0094c0003": [0, 3], "r0079c0004": [0, 4], "r0067c0005": [0, 5], "r0042c0006": [0, 6], "r0022c0007": [0, 7], "r0012c0000": [1, 0], "r0046c0001": [1, 1], "r0096c0002": [1, 2], "r0095c0003": [1, 3], "r0082c0004": [1, 4], "r0070c0005": [1, 5], "r0046c0006": [1, 6], "r0023c0007": [1, 7], "r0013c0000": [2, 0], "r0055c0001": [2, 1], "r0101c0002": [2, 2], "r0098c0003": [2, 3], "r0084c0004": [2, 4], "r0072c0005": [2, 5], "r0047c0006": [2, 6], "r0025c0007": [2, 7], "r0021c0000": [3, 0], "r0056c0001": [3, 1], "r0102c0002": [3, 2], "r0100c0003": [3, 3], "r0085c0004": [3, 4], "r0073c0005": [3, 5], "r0048c0006": [3, 6], "r0026c0007": [3, 7], "r0024c0000": [4, 0], "r0058c0001": [4, 1], "r0104c0002": [4, 2], "r0089c0004": [4, 3], "r0101c0003": [4, 4], "r0074c0005": [4, 5], "r0049c0006": [4, 6], "r0027c0007": [4, 7], "r0025c0000": [5, 0], "r0059c0001": [5, 1], "r0105c0002": [5, 2], "r0102c0003": [5, 3], "r0090c0004": [5, 4], "r0076c0005": [5, 5], "r0050c0006": [5, 6], "r0028c0007": [5, 7], "r0026c0000": [6, 0], "r0060c0001": [6, 1], "r0106c0002": [6, 2], "r0103c0003": [6, 3], "r0091c0004": [6, 4], "r0077c0005": [6, 5], "r0051c0006": [6, 6], "r0029c0007": [6, 7], "r0027c0000": [7, 0], "r0061c0001": [7, 1], "r0107c0002": [7, 2], "r0104c0003": [7, 3], "r0092c0004": [7, 4], "r0078c0005": [7, 5], "r0052c0006": [7, 6], "r0030c0007": [7, 7], "r0028c0000": [8, 0], "r0062c0001": [8, 1], "r0108c0002": [8, 2], "r0105c0003": [8, 3], "r0093c0004": [8, 4], "r0079c0005": [8, 5], "r0053c0006": [8, 6], "r0031c0007": [8, 7], "r0029c0000": [9, 0], "r0063c0001": [9, 1], "r0109c0002": [9, 2], "r0106c0003": [9, 3], "r0094c0004": [9, 4], "r0080c0005": [9, 5], "r0054c0006": [9, 6], "r0032c0007": [9, 7]}, "sideBarStatus": {"left": {"totalScores": 359, "highestCombo": 103, "currentCombo": 103, "status": -1}, "right": {"totalScores": 772, "highestCombo": 109, "currentCombo": 0, "status": 1}}}
+
+
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+const chartDom = document.getElementById("chart");
+const myChart = echarts.init(chartDom);
+
+// myChart.setOption(optionRelative);
+var optionRelative;
+var optionAbsolute;
+
+function initializeGraph(scores){
+  optionRelative = {
+    title: {
+      text: '相对分数',
+      left: 10
+    },
+    toolbox: {
+      feature: {
+        dataZoom: {
+          yAxisIndex: false
+        },
+        saveAsImage: {
+          pixelRatio: 2
+        }
+      }
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    grid: {
+      bottom: 90
+    },
+    dataZoom: [
+      {
+        type: 'inside',
+        yAxisIndex: [0]
+      },
+      {
+        type: 'slider',
+        yAxisIndex: [0]
+      }
+    ],
+    yAxis: {
+      // data: scores.relative,
+      // data:data.categoryData,
+      // data:data.relative,
+      
+      data:[0,...Array.from({length: scores.relative.length-1}, (_, i) => i + 1)],
+      
+      silent: false,
+      splitLine: {
+        show: false
+      },
+      splitArea: {
+        show: false
+      }
+    },
+    xAxis: {
+      splitArea: {
+        show: false
+      }
+    },
+    series: [
+      {
+        type: 'line',
+        // data: data.valueData,
+        data:scores.relative,
+        // Set `large` for large data amount
+        large: true,
+        itemStyle: {
+          color: 'rgb(255, 70, 131)'
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+              offset: 0,
+              color: 'rgb(255, 158, 68)'
+            },
+            {
+              offset: 1,
+              color: 'rgb(255, 70, 131)'
+            }
+          ])
+        },
+      },
+      {
+        type: 'none',
+      }
+    ]
+  };
+
+  optionAbsolute = {
+    title: {
+      text: '绝对分数',
+      left: 10
+    },
+    toolbox: {
+      feature: {
+        dataZoom: {
+          yAxisIndex: false
+        },
+        saveAsImage: {
+          pixelRatio: 2
+        }
+      }
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    grid: {
+      bottom: 90
+    },
+    dataZoom: [
+      {
+        type: 'inside',
+        yAxisIndex: [0]
+      },
+      {
+        type: 'slider',
+        yAxisIndex: [0]
+      }
+    ],
+    yAxis: {
+      data:[0,...Array.from({length: scores.right.length-1}, (_, i) => i + 1)],
+      
+      silent: false,
+      splitLine: {
+        show: false
+      },
+      splitArea: {
+        show: false
+      }
+    },
+    xAxis: {
+      splitArea: {
+        show: false
+      }
+    },
+    series: [
+      // {
+      //   type: 'none',
+      // },
+      {
+        type: 'line',
+        // data: data.valueData,
+        data:scores.left,
+        // Set `large` for large data amount
+        large: true,
+        itemStyle: {
+          color: 'rgb(5, 5, 153)'
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+              offset: 0,
+              color: 'rgb(5, 5, 153, 0.15)'
+            },
+            {
+              offset: 1,
+              color: 'rgb(5, 5, 153, 0.4)'
+            }
+          ])
+        },
+      },
+      {
+        type: 'line',
+        // data: data.valueData,
+        data:scores.right,
+        // Set `large` for large data amount
+        large: true,
+        itemStyle: {
+          color: 'rgb(153, 5, 5)'
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+              offset: 0,
+              color: 'rgb(153, 5, 5, 0.15)'
+            },
+            {
+              offset: 1,
+              color: 'rgb(153, 5, 5, 0.4)'
+            }
+          ])
+        },
+      }
+    ]
+  };
+
+
+}
+
 
 </script>
 {% endblock %}

@@ -89,13 +89,15 @@ initialization=function(record){
       drawFrame(frames[currentFrame]);
       currentFrame++;
     }
-  },800)
+  },800/PLAYING_SPEED)
 }
 // Define a function to draw a frame
 
 function drawFrame(frame) {
   // Global variables
   const {turnNumber,currentPlayer,remainedBarStatus,boardStatus,sideBarStatus}=frame;
+
+  document.documentElement.style.setProperty('--PLAYING_SPEED', PLAYING_SPEED);
 
   updateRemainedBar(remainedBarStatus);
   updateSideBar(sideBarStatus);
@@ -159,33 +161,13 @@ updateBoard=function(boardStatus,team='unknown'){
         moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
         setTimeout(()=>{
           piece.classList.remove('appearing');
-        },300);
-      },25);// The lag time here should be changed according to the play scale
+        },300/PLAYING_SPEED);
+      },25/PLAYING_SPEED);// The lag time here should be changed according to the play scale
     } else{
       const piece=currentBoard[pieceId];
       moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
     }
   }
-//   for (let pieceId in boardStatus) {
-//     (function (currentPieceId) {
-//       if (!(currentPieceId in currentBoard)) {
-//         const piece = createPiece(currentPieceId, getColor(currentPieceId));
-//         currentBoard[currentPieceId] = piece;
-//         moveTo(piece, boardStatus[currentPieceId][0], -2);
-//         board.appendChild(piece);
-//         setTimeout(() => {
-//           piece.classList.add("appearing");
-//           moveTo(piece, boardStatus[currentPieceId][0], boardStatus[currentPieceId][1]);
-//           setTimeout(() => {
-//             piece.classList.remove("appearing");
-//           }, 300);
-//         }, 300); // The lag time here should be changed according to the play scale
-//       } else {
-//         const piece = currentBoard[currentPieceId];
-//         moveTo(piece, boardStatus[currentPieceId][0], boardStatus[currentPieceId][0]);
-//       }
-//     })(pieceId);
-//   }  
 }
 // Define a function to draw the score graph
 updateScoreGraph=function(){
@@ -273,10 +255,11 @@ function eliminate(piece,team='unknown'){
     return;
   } else{
   piece.classList.add("eliminated");
+  piece.style.zIndex='30';
   setTimeout(function(){
     remove(piece);
   }
-  ,300);// Need to be adjusted according to the play scale
+  ,300/PLAYING_SPEED);// Need to be adjusted according to the play scale
   if (team==='unknown'){
   piece.style.top=`${borderWidth + (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
   }else if (team==="left") {
@@ -377,38 +360,9 @@ const c={"turnNumber": 13, "currentPlayer": 1, "remainedBarStatus": [272, 238, 1
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
-const dataCount = 55;
-const data = generateData(dataCount);
 const chartDom = document.getElementById("chart");
 const myChart = echarts.init(chartDom);
 
-
-function generateData(count) {
-  let baseValue = Math.random() * 1000;
-  let time = +new Date(2011, 0, 1);
-  let smallBaseValue;
-  function next(idx) {
-    smallBaseValue =
-      idx % 30 === 0
-        ? Math.random() * 700
-        : smallBaseValue + Math.random() * 500 - 250;
-    baseValue += Math.random() * 20 - 10;
-    return Math.max(0, Math.round(baseValue + smallBaseValue) + 3000);
-  }
-  const categoryData = [];
-  const valueData = [];
-  for (let i = 0; i < count; i++) {
-    categoryData.push(
-      echarts.format.formatTime('yyyy-MM-dd\nhh:mm:ss', time, false)
-    );
-    valueData.push(next(i).toFixed(2));
-    time += 1000;
-  }
-  return {
-    categoryData: categoryData,
-    valueData: valueData
-  };
-}
 // myChart.setOption(optionRelative);
 var optionRelative;
 var optionAbsolute;
@@ -548,6 +502,9 @@ function initializeGraph(scores){
       }
     },
     series: [
+      // {
+      //   type: 'none',
+      // },
       {
         type: 'line',
         // data: data.valueData,
@@ -598,8 +555,5 @@ function initializeGraph(scores){
 
 }
 
-// if (title==='相对分数'){
-//   myChart.setOption(optionRelative);
-// } else if (title==='绝对分数'){
-//   myChart.setOption(optionAbsolute);
-// }
+
+

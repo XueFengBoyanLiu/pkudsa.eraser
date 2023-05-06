@@ -1,7 +1,8 @@
 /* Global variables */
-*{
+html{
   --size: 8;
   --preview: 2;
+  --PLAYING_SPEED: 1;
 }
 #left-sidebar{
   --teamcolor: rgb(5, 5, 153);
@@ -314,7 +315,7 @@ body{
   border-top-right-radius: 2px;
   border-top-left-radius: 2px;
 
-  transition: 0.3s all;
+  transition: calc(0.3s / var(--PLAYING_SPEED)) all;
 }
 
 /* The board*/
@@ -386,7 +387,7 @@ body{
   border-radius: 50%;
   z-index: 20;
   display: none;
-  transition: all 0.3s ease-in;
+  transition: all calc(0.3s / var(--PLAYING_SPEED)) ease-in;
 
   border-color: white;
   border-style: solid;

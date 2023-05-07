@@ -41,7 +41,7 @@ class Board:
         idx = np.arange(len(self.colors))
         np.random.shuffle(idx)
         remain = [1,] * (self.size % len(self.colors)) + [0,] * (len(self.colors) - (self.size % len(self.colors)))
-        a = np.vstack([np.full((self.size, self.size // len(self.colors) + remain[i]),
+        a = np.hstack([np.full((self.size, self.size // len(self.colors) + remain[i]),
             self.colors[idx[i]]) for i in range(len(self.colors))]).reshape(
             (self.size ** 2, 1))
         np.random.shuffle(a)  # Shuffle the order of color blocks.
@@ -130,7 +130,7 @@ class Board:
                     operations.append([(i, j), (i, j + 1)])
                 self.mainboard[i, j], self.mainboard[i, j + 1] = self.mainboard[i, j + 1], self.mainboard[i, j]
         return [self.board[:, :, 0], operations]
-    
+
     def change(self, loc1, loc2, *args):
         '''
         Exchange the colors of two adjacent cells in the current sub-board.
@@ -239,4 +239,3 @@ class Board:
 
         # Return the total score and the number of columns eliminated
         return score, columns_eliminated
-

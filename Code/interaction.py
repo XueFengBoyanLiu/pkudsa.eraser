@@ -1,16 +1,8 @@
 ## the game interaction
-from __future__ import annotations
+#from __future__ import annotations
 from board import *
 from exception_manager import *
 from eraserconfig import *
-
-#from player1 import Robot as P1
-#from player2 import Robot as P2
-## player class: Robot (the name may change)
-## method: move(np.array: current_board) -> tuple: 2 blocks to move
-## attribute: name(str)
-#player_safe_1 = Player(P1)
-#player_safe_2 = Player(P2)
 
 import threading
 import time
@@ -187,7 +179,7 @@ class Game_play():
                 log['reason'] = 'Reach turn limit'
         else:
             log['reason'] = 'An error occurred during the game, see error message for details'
-            log['errorMessage'] = self.replay['errorMessage'].split('\n')[-2],
+            log['errorMessage'] = self.replay['errorMessage'].split('\n')[-2]
         return log
 
 class Game_runner():

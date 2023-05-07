@@ -26,8 +26,16 @@ class Board:
 
         # Add ID matrix to the main board
         self.board = np.dstack((self.board, self.id_matrix))
-        # Extract the first sub-board to use as the main board.
-        self.mainboard = self.board[:self.size, :self.size, 0]
+                
+    @property
+    def mainboard(self):
+        return self.board[:self.size, :self.size, 0]
+        
+    def copy(self):
+        newboard = self.board.copy()
+        copied = Board()
+        copied.board = newboard
+        return copied
 
     def generate_board(self):
         '''

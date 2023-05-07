@@ -2,6 +2,7 @@
 from __future__ import annotations
 from board import *
 from exception_manager import *
+from eraserconfig import *
 
 #from player1 import Robot as P1
 #from player2 import Robot as P2
@@ -16,8 +17,6 @@ import time
 import traceback
 import numpy as np
 import json
-
-from config import *
 
 def serialize_np(obj):
     if isinstance(obj, (np.int64, np.int32)):
@@ -159,11 +158,11 @@ class Game_play():
         self.replay['scores'] = {'left': history[:, 0],
                                 'right': history[:, 1],
                                 'relative': history[:, 0] - history[:, 1]}
+        print('Game ends')
 
     def save_log(self, path):
         with open(path, 'w') as f:
             json.dump(self.replay, f, default = serialize_np)
-        print('Game ends')
         return
 
     @property

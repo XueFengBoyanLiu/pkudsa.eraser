@@ -3,7 +3,7 @@ import threading
 import traceback
 import numpy as np
 
-from config import *
+from eraserconfig import *
 
 class Timeout(Exception):
     def __init__(self):

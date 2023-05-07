@@ -1,0 +1,38 @@
+{% extends 'game_info/base.html' %}
+{% load static %}
+
+{% block intro %}
+<h4>数算(B)2023期末作业：星际消战Eraser</h4>
+<ul>
+	<li>
+		每次对决两队面对同个棋盘。两队AI交替作出<strong>交换棋盘上的两个相邻棋子</strong>的操作。
+	</li>
+    <li>
+        一队进行操作后，进入计分-移除-掉落的循环过程。
+        <ol>
+            <li>
+                <strong>计分</strong>：交换棋子后若出现有效连通区域，该队进行相应计分。
+            </li>
+            <li>
+                <strong>移除</strong>：计分后，棋盘上所有有效连通区域的构成棋子都被同时移除。
+            </li>
+            <li>
+                <strong>掉落</strong>：棋盘若出现空缺，由上方储备棋盘相应列的棋子重力掉落补充；若某次掉落后，棋盘上不再存在有效连通区域，则循环结束，该队回合结束，换对手进行操作。
+            </li>
+        </ol>
+    </li>
+    <li>
+        对决的两队的目标为：选择棋盘上的相邻棋子进行交换，消除棋子或布局棋盘，在与对方的博弈中得到更高的分数，从而获胜。
+    </li>
+
+	<li>
+		项目地址：
+        <a href="https://github.com/XueFengBoyanLiu/pkudsa.eraser" target='_blank'>pkudsa.eraser</a>
+		；详细说明请见其文档。
+	</li>
+</ul>
+{% endblock %}
+
+{% block images %}
+<img src="{% static 'images/game_info/eraser.png' %}" style='height:100%'>
+{% endblock %}

@@ -133,10 +133,15 @@ class Game_play():
         frame = {'turnNumber': self.turn,
                 'currentPlayer': self.turn & 1,
                 'remainedBarStatus': self.remained_blocks}
-        frame['boardStatus'] = {board_status[i, j, 1] + 'b' +
-                                COLORS[board_status[i, j, 0]]: [i, j]
-                                    for i in range(board_status.shape[0])
-                                        for j in range (board_status.shape[1])}
+        board_status = {'nan' if board_status[i, j, 0] == 'nan'
+                        else board_status[i, j, 1] + 'b' +
+                        COLORS[board_status[i, j, 0]]: [i, j]
+                            for i in range(board_status.shape[0])
+                                for j in range (board_status.shape[1])}
+        frame['boardStatus'] = {}
+        for k, v in board_status.items():
+            if k != 'nan':
+                frame['boardStatus'][k] = v
         frame['sideBarStatus'] = self.status
         self.replay['frames'].append(frame)
         return

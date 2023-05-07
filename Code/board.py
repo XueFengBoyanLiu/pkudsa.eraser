@@ -1,9 +1,9 @@
 import numpy as np
 import random
-
+from config import *
 
 class Board:
-    def __init__(self, size=8, board_num=1000, colors=np.array(['R', 'G', 'B', 'Y'])):
+    def __init__(self, size=BOARD_SIZE, board_num=N_ROWS//8, colors=np.array(['R', 'G', 'B', 'Y'])):
         '''
         Initialize board instance.
 

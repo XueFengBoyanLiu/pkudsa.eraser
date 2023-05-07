@@ -185,7 +185,7 @@ class Game_play():
 class Game_runner():
     def __init__(self, p1, p2):
         self.board1 = Board()
-        self.board2 = Board()
+        self.board2 = self.board1.copy()
         self.p1 = p1
         self.p2 = p2
 

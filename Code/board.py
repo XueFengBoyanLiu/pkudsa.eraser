@@ -36,7 +36,7 @@ class Board:
         np.array: A new sub-board generated using the given rules.
         '''
         # Concatenate four color blocks, each of which has size*size/4 cells filled with the corresponding color.
-        a = np.concatenate([np.full((self.size // 2, self.size // 2), self.colors[i]) for i in np.arange(len(self.colors))]).reshape(
+        a = np.concatenate([np.full((self.size, self.size // len(self.colors)), self.colors[i]) for i in np.arange(len(self.colors))]).reshape(
             (self.size ** 2, 1))
         np.random.shuffle(a)  # Shuffle the order of color blocks.
 

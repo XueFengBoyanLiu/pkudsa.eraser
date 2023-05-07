@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from config import *
+from eraserconfig import *
 
 class Board:
     def __init__(self, size=BOARD_SIZE, board_num=N_ROWS//8, colors=np.array(['R', 'G', 'B', 'Y'])):

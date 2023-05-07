@@ -15,7 +15,6 @@ import threading
 import time
 import traceback
 import numpy as np
-import pandas as pd
 import json
 
 from config import *
@@ -28,7 +27,7 @@ def serialize_np(obj):
     raise TypeError ("Type %s is not serializable" % type(obj))
 
 class Game_play():
-    def __init__(self, player_1, player_2, board=None, file='replay.json'):
+    def __init__(self, player_1, player_2, board=None):
         '''
         Parameters
         ----------
@@ -39,7 +38,6 @@ class Game_play():
         # the players are wrapped by exception_manager.py
         self.board = Board() if board is None else board
         self.remained_blocks = [N_ROWS - BOARD_SIZE for _ in range(BOARD_SIZE)]
-        self.output_file = file
 
         self.turn = 0
         self.replay = {'totalFrames': 0,
@@ -112,7 +110,7 @@ class Game_play():
             self.remained_blocks = self.remained_blocks - columns_eliminated
             self.score[side] += pts
             self.current_combo[side] += columns_eliminated.sum()
-            print(self.current_combo)
+            #print(self.current_combo)
             self.high_combo[side] = max(self.high_combo[side],
                     self.current_combo[side])
 
@@ -123,8 +121,8 @@ class Game_play():
         Given current board, get a move from the current player
         Returns: ((x1, y1), (x2, y2))
         '''
-        if self.board.get_info()[1] == []:
-            print('no moves available')
+        #if self.board.get_info()[1] == []:
+            #print('no moves available')
         return player('move', *self.board.get_info())
 
     def record_frame(self):
@@ -158,11 +156,12 @@ class Game_play():
             self.replay['winner'] = np.argmax(self.score)
 
         history = np.vstack(self.scores_history)
-        history = pd.DataFrame(history, columns=['left', 'right'])
-        history['relative'] = history['left'] - history['right']
-        self.replay['scores'] = history.to_dict('list')
+        self.replay['scores'] = {'left': history[:, 0],
+                                'right': history[:, 1],
+                                'relative': history[:, 0] - history[:, 1]}
 
-        with open(self.output_file, 'w') as f:
+    def save_log(self, path):
+        with open(path, 'w') as f:
             json.dump(self.replay, f, default = serialize_np)
         print('Game ends')
         return
@@ -171,7 +170,7 @@ class Game_play():
     def log_data(self):
         '''Return the log data to server'''
         log = {'winner': self.replay['winner'],
-                'errorMessage': self.replay['errorMessage'].split('\n')[-2],
+                'errorMessage': '',
                 'errorStatus': self.replay['exitStatus'] - 1,
                 'length': self.turn,
                 'score': 1000,
@@ -184,21 +183,28 @@ class Game_play():
                 log['reason'] = 'Reach turn limit'
         else:
             log['reason'] = 'An error occurred during the game, see error message for details'
+            log['errorMessage'] = self.replay['errorMessage'].split('\n')[-2],
         return log
 
 class Game_runner():
     def __init__(self, p1, p2):
-        self.board = Board()
+        self.board1 = Board()
+        self.board2 = Board()
         self.p1 = p1
         self.p2 = p2
+
     def start_games(self):
-        game1 = Game_play(self.p1, self.p2, board=self.board, file='replay_1.json')
-        game1.start_game()
-        game2 = Game_play(self.p2, self.p1, board=self.board, file='replay_2.json')
-        game2.start_game()
-        log1, log2 = game1.log_data, game2.log_data
+        self.game1 = Game_play(self.p1, self.p2, board=self.board1)
+        self.game1.start_game()
+        self.game2 = Game_play(self.p2, self.p1, board=self.board2)
+        self.game2.start_game()
+        log1, log2 = self.game1.log_data, self.game2.log_data
         log2['winner'] = 1 - log2['winner']
         return log1, log2
+
+    def save_game_log(self, path1, path2):
+        self.game1.save_log(path1)
+        self.game2.save_log(path2)
 
 if __name__ == '__main__':
     import test_bot
@@ -206,5 +212,6 @@ if __name__ == '__main__':
     import failed_test_bot as fb
     bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
             fb.FailedRobot4(), fb.FailedRobot5()]
-    game = Game_runner(tp, bots[1])
+    game = Game_runner(tp, tp)
     print(game.start_games())
+    game.save_game_log('r1.json', 'r2.json')

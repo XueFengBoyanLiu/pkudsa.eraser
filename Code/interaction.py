@@ -28,11 +28,11 @@ class Game_play():
         self.terminated = False
         # the players are wrapped by exception_manager.py
         self.board = Board() if board is None else board
-        self.remained_blocks = [N_ROWS - BOARD_SIZE for _ in range(BOARD_SIZE)]
+        self.remained_blocks = np.full(BOARD_SIZE, N_ROWS - BOARD_SIZE - 2)
 
         self.turn = 0
         self.replay = {'totalFrames': 0,
-                'totalRemains': (N_ROWS - BOARD_SIZE),
+                'totalRemains': (N_ROWS - BOARD_SIZE - 2),
                 'scores': {},
                 'exitStatus': 0,
                 'errorMessage': '',
@@ -124,7 +124,7 @@ class Game_play():
         board_status = self.board.peek_board()
         frame = {'turnNumber': self.turn,
                 'currentPlayer': self.turn & 1,
-                'remainedBarStatus': self.remained_blocks}
+                'remainedBarStatus': self.remained_blocks.clip(0, None)}
         board_status = {'nan' if board_status[i, j, 0] == 'nan'
                         else board_status[i, j, 1] + 'b' +
                         COLORS[board_status[i, j, 0]]: [i, j]
@@ -185,7 +185,7 @@ class Game_play():
 class Game_runner():
     def __init__(self, p1, p2):
         self.board1 = Board()
-        self.board2 = Board()
+        self.board2 = self.board1.copy()
         self.p1 = p1
         self.p2 = p2
 

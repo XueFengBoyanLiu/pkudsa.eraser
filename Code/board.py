@@ -157,7 +157,7 @@ class Board:
         temp2 = self.board[x2, y2, :].copy()
         self.board[x1, y1, :], self.board[x2, y2, :] = temp2, temp1
 
-        def eliminate(self, func=lambda x: (len(x) - 2) ** 2):
+    def eliminate(self, func=lambda x: (len(x) - 2) ** 2):
         '''
         Eliminates connected elements from the mainboard and calculates the score.
 

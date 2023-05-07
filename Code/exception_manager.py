@@ -76,9 +76,9 @@ class Player_safe:
         - the two points are adjacent
         - the points lie inside the board
         '''
-        blocks = np.array(move)
-        if blocks.shape != (2, 2):
+        if len(move) != 2 or len(move[0]) != 2 or len(move[1]) != 2:
             raise InvalidMove('Not a proper input.')
+        blocks = np.array(move)
         distance = np.abs(blocks[0] - blocks[1]).sum()
         if distance != 1:
             raise InvalidMove('Not adjacent positions.')

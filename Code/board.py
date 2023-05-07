@@ -37,6 +37,7 @@ class Board:
         np.array: A new sub-board generated using the given rules.
         '''
         # Concatenate four color blocks, each of which has size*size/4 cells filled with the corresponding color.
+
         idx = np.arange(len(self.colors))
         np.random.shuffle(idx)
         remain = [1,] * (self.size % len(self.colors)) + [0,] * (len(self.colors) - (self.size % len(self.colors)))

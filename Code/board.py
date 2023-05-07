@@ -1,9 +1,10 @@
 import numpy as np
 import random
-
+from eraserconfig import *
 
 class Board:
-    def __init__(self, size=8, board_num=1000, colors=np.array(['R', 'G', 'B', 'Y'])):
+    def __init__(self, size=BOARD_SIZE, board_num=N_ROWS//BOARD_SIZE,
+            colors=np.array(list(COLORS.keys()))):
         '''
         Initialize board instance.
 
@@ -36,7 +37,12 @@ class Board:
         np.array: A new sub-board generated using the given rules.
         '''
         # Concatenate four color blocks, each of which has size*size/4 cells filled with the corresponding color.
-        a = np.concatenate([np.full((self.size // 2, self.size // 2), self.colors[i]) for i in np.arange(len(self.colors))]).reshape(
+
+        idx = np.arange(len(self.colors))
+        np.random.shuffle(idx)
+        remain = [1,] * (self.size % len(self.colors)) + [0,] * (len(self.colors) - (self.size % len(self.colors)))
+        a = np.vstack([np.full((self.size, self.size // len(self.colors) + remain[i]),
+            self.colors[idx[i]]) for i in range(len(self.colors))]).reshape(
             (self.size ** 2, 1))
         np.random.shuffle(a)  # Shuffle the order of color blocks.
 

@@ -9,7 +9,7 @@
   </head>
 
 
-  <body style="width:1000px;margin-left: 100px;">
+  <body style="padding-top: 20px;margin-bottom:200px;">
     
     <div id="side-display">
       <div id="scores-graph-section">
@@ -21,7 +21,7 @@
             </select>
           </div>
         </div>
-        <div id="chart" style="width:200px;height: 80vh;"></div>
+        <div id="chart" style="width:300px;height: 80vh;"></div>
       </div>
     </div>
 
@@ -77,10 +77,34 @@
 
       </div>
 
-      
+      <div id="file-chooser-container">
+        <label for="file-chooser-input" id="file-chooser">请选择一个复盘记录</label>
+        <input type="file" id="file-chooser-input" style="display: none">
+      </div>
+      <div id="playtools-container" style="display: none;">
+        <div>
+          <button id="play" onclick="play()">
+            播放
+          </button>
+          <button id="stop" onclick="stop()">
+            暂停
+          </button>
+        </div>
+        <div id="frame-changer">
+          <div>当前帧数：<span id="current-frame">0</span></div>
+          <div>总帧数：<span id="total-frame">0</span></div>
+          <input type="number" id="jump-input" min=0>
+          <button id="jump" onclick="jump()">
+            跳转
+          </button>
+        </div>
+        <input type="number" id="speed-input" min=0>
+        <button id="speed" onclick="speed()">
+          播放倍速
+        </button>
+      </div>
     </div>
-    <label for="file-chooser-input" id="file-chooser">选择一个复盘记录(.json)来运行吧</label>
-    <input type="file" id="file-chooser-input" style="display: none">
+
 
 
     <script src="Scripts/main.js"></script>

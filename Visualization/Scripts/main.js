@@ -2,6 +2,8 @@
 const size=8;
 const preview=2;
 
+const unitTime=400;
+
 const width=400;
 const unitSize=width/size;
 const borderWidth=unitSize/size;
@@ -22,7 +24,23 @@ const currentBoard={};
 
 const player={0:'left',1:'right'}
 // Green Blue Orange Pink Colors
-const colorArray=["rgb(13, 211, 82)","rgb(22, 218, 224)","rgb(224, 134, 60)","rgb(243, 121, 137)"];
+const colorArray=["rgb(13, 211, 82)","rgb(22, 218, 224)","rgb(224, 134, 60)","rgb(243, 121, 137)","rgb(244, 67, 54)","rgb(255, 193, 7)","rgb(96, 125, 139)","rgb(0, 188, 212)","rgb(103, 58, 183)","rgb(233, 30, 99)","rgb(255, 152, 0)","rgb(3, 169, 244)"];
+let colorShift=8;
+
+let currentFrame=0;
+let isPlaying=false;
+
+const playtoolsContainer=document.getElementById('playtools-container');
+const playButton=playtoolsContainer.querySelector('#play');
+const stopButton=playtoolsContainer.querySelector('#stop');
+const speedButton=playtoolsContainer.querySelector('#speed');
+const speedInput=speedButton.previousElementSibling;
+const jumpButton=playtoolsContainer.querySelector('#jump');
+const jumpInput=jumpButton.previousElementSibling;
+const currentFrameNumber=playtoolsContainer.querySelector('#current-frame');
+const totalFrameNumber=playtoolsContainer.querySelector('#total-frame');
+
+
 
 
 // 烦人的接口!
@@ -40,9 +58,11 @@ PLAYING_FPS = 1.25;
 const fileChooser=document.getElementById('file-chooser');
 // Update the Chooser when it is chosen
 const updateChooser=function(object){
-  object.innerText='---';
+  object.innerText='';
   object.classList.add('chosen');
   object.nextElementSibling.disabled=true;
+  object.style.display="none";
+  playtoolsContainer.style.display="block";
 }
 // Get the information of chosen file
 const getInfo=function(file){
@@ -74,23 +94,42 @@ fileChooser.nextElementSibling.addEventListener('change',(event)=>{
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 // Define the initialization function
-let totalRemains=300;
+function startPlaying(){
+  if (!isPlaying){
+    playingCache=setInterval(()=>{
+      if (currentFrame<totalFrames){
+        drawFrame(frames[currentFrame]);
+        currentFrame++;
+      }
+    },650/PLAYING_SPEED)
+    isPlaying=true;
+  }
+}
+function stopPlaying(){
+  clearInterval(playingCache);
+  isPlaying=false;
+}
+let playingCache
+let totalRemains,totalFrames,scores,exitStatus,errorMessage,winner,frames;
 initialization=function(record){
   // Global variables
-  const {totalFrames,scores,exitStatus,errorMessage,winner,frames}=record;
+  totalFrames=record.totalFrames;
+  scores=record.scores;
+  exitStatus=record.exitStatus;
+  errorMessage=record.errorMessage;
+  winner=record.winner;
+  frames=record.frames;
   totalRemains=record.totalRemains;
-  // leftTeamName=;
-  // rightTeamName=;
-  let currentFrame=0;
+
+  totalFrameNumber.innerText=totalFrames-1;
+
   initializeGraph(scores);
   myChart.setOption(optionRelative);
-  setInterval(()=>{
-    if (currentFrame<totalFrames){
-      drawFrame(frames[currentFrame]);
-      currentFrame++;
-    }
-  },800/PLAYING_SPEED)
+  startPlaying();
 }
+
+
+
 // Define a function to draw a frame
 
 function drawFrame(frame) {
@@ -102,7 +141,7 @@ function drawFrame(frame) {
   updateRemainedBar(remainedBarStatus);
   updateSideBar(sideBarStatus);
   updateBoard(boardStatus,player[currentPlayer]);
-  
+  updateCurrentFrameDisplay();
 }
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
@@ -138,7 +177,7 @@ updateSideBar=function (sideBarStatus) {
 // Define a function to update the board
   // Define a function to get the color of a piece
   getColor=function(pieceId){
-    return colorArray[pieceId.slice(-1)];
+    return colorArray[colorShift+parseInt(pieceId.slice(-1))];
   }
 updateBoard=function(boardStatus,team='unknown'){
   for (let pieceId in currentBoard){
@@ -151,21 +190,24 @@ updateBoard=function(boardStatus,team='unknown'){
     if (!(pieceId in currentBoard)){
       const piece=createPiece(pieceId,getColor(pieceId));
       currentBoard[pieceId]=piece;
-      moveTo(piece,size-1-boardStatus[pieceId][1],-2);
+      // moveTo(piece,size-1-boardStatus[pieceId][1],-2);
+      moveTo(piece,boardStatus[pieceId][1],-2);
       piece.style.display='block';
       board.appendChild(piece);
       // Make the piece to appear
       setTimeout(()=>{
         // piece.style.display='block';
         piece.classList.add('appearing');
-        moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+        // moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+        moveTo(piece,boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
         setTimeout(()=>{
           piece.classList.remove('appearing');
-        },300/PLAYING_SPEED);
+        },unitTime/PLAYING_SPEED);
       },25/PLAYING_SPEED);// The lag time here should be changed according to the play scale
     } else{
       const piece=currentBoard[pieceId];
-      moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+      // moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+      moveTo(piece,boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
     }
   }
 }
@@ -259,14 +301,16 @@ function eliminate(piece,team='unknown'){
   setTimeout(function(){
     remove(piece);
   }
-  ,300/PLAYING_SPEED);// Need to be adjusted according to the play scale
-  if (team==='unknown'){
-  piece.style.top=`${borderWidth + (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
-  }else if (team==="left") {
-  piece.style.left=`${borderWidth +  (-2) * unitSize + blockGap/2+radiusGap / 2}px`;
-  } else if (team==="right") {
-  piece.style.left=`${borderWidth +  (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
-  }
+  ,unitTime/PLAYING_SPEED);// Need to be adjusted according to the play scale
+  setTimeout(()=>{
+    if (team==='unknown'){
+      piece.style.top=`${borderWidth + (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
+      }else if (team==="left") {
+      piece.style.left=`${borderWidth +  (-2) * unitSize + blockGap/2+radiusGap / 2}px`;
+      } else if (team==="right") {
+      piece.style.left=`${borderWidth +  (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
+      }
+  },150/PLAYING_SPEED)
 } 
 }
 
@@ -286,7 +330,7 @@ function moveTo(piece,x,y){
 function test() {
   for(i=0;i<size;i++){
     for (j=0;j<size+preview;j++){
-      let piece=createPiece(`r${j}c${i}`,colorArray[Math.floor(Math.random()*colorArray.length)]);
+      let piece=createPiece(`r${j}c${i}`,colorArray[colorShift+Math.floor(Math.random()*colorArray.length)]);
       piece.style.display='block';
       moveTo(piece,i,j);
       board.appendChild(piece);
@@ -554,6 +598,32 @@ function initializeGraph(scores){
 
 
 }
+
+
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+// Play tools
+function play(){
+  startPlaying();
+}
+function stop(){
+  stopPlaying();
+}
+function updateCurrentFrameDisplay(){
+  currentFrameNumber.innerText=currentFrame;
+}
+function jump(){
+  currentFrame=parseInt(jumpInput.value);
+  drawFrame(frames[currentFrame]);
+}
+function speed(){
+  stopPlaying();
+  PLAYING_SPEED=parseFloat(speedInput.value);
+  startPlaying();
+}
+
 
 
 

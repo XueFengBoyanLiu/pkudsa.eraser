@@ -203,7 +203,7 @@ class Board:
 
                     while queue:
                         x, y = queue.pop(0)
-                        if check_flag(x, y):
+                        if flag or check_flag(x, y):
                             flag = True
                         temp.append((x, y))
                         if x + 1 < self.size and (x + 1, y) not in visited and matrix[x + 1][y] == matrix[x][y]:

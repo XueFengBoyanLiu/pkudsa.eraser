@@ -18,7 +18,7 @@ html{
 }
 
 #middle-section{
-  --width: 400px;
+  --width: 380px;
   --unit-size: calc(var(--width) / var(--size));
   --border-width: calc(var(--unit-size) / var(--size));
 }
@@ -333,7 +333,8 @@ body{
   border-top-right-radius: 2px;
   border-top-left-radius: 2px;
 
-  transition: calc(var(--unit-time) / var(--PLAYING_SPEED)) all;
+  /* transition: calc(var(--unit-time) / var(--PLAYING_SPEED)) all; */
+  transition: var(--unit-time) all;
 }
 
 /* The board*/
@@ -377,6 +378,10 @@ body{
   cursor:pointer;
   opacity: 0.75;
 }
+#file-chooser:active, #folder-chooser:active, button:active{
+  opacity: 0.5;
+  cursor: auto;
+}
 input[type="number"] {
   padding: 0.4em;
   width: 6em;
@@ -410,7 +415,7 @@ input[type="number"] {
   width: calc(var(--unit-size) - var(--block-gap) - var(--radius-gap));
   height: calc(var(--unit-size) - var(--block-gap) - var(--radius-gap));
   border-radius: 50%;
-  z-index: 20;
+  z-index: 30;
   display: none;
   transition: all calc(var(--unit-time) / var(--PLAYING_SPEED)) ease-in;
 

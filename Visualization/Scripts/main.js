@@ -4,7 +4,7 @@ const preview=2;
 
 const unitTime=400;
 
-const width=400;
+const width=380;
 const unitSize=width/size;
 const borderWidth=unitSize/size;
 
@@ -37,9 +37,13 @@ const speedButton=playtoolsContainer.querySelector('#speed');
 const speedInput=speedButton.previousElementSibling;
 const jumpButton=playtoolsContainer.querySelector('#jump');
 const jumpInput=jumpButton.previousElementSibling;
+const currentTurnNumber=playtoolsContainer.querySelector('#current-turn');
+// const currentTurnStartNumber=playtoolsContainer.querySelector('#current-turn-start')
+const startOrEnd=playtoolsContainer.querySelector('#start-or-end')
 const currentFrameNumber=playtoolsContainer.querySelector('#current-frame');
 const totalFrameNumber=playtoolsContainer.querySelector('#total-frame');
-
+const lastButton=playtoolsContainer.querySelector('#last');
+const nextButton=playtoolsContainer.querySelector('#next');
 
 
 
@@ -142,6 +146,7 @@ function drawFrame(frame) {
   updateSideBar(sideBarStatus);
   updateBoard(boardStatus,player[currentPlayer]);
   updateCurrentFrameDisplay();
+  updateCurrentTurnDisplay(turnNumber);
 }
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
@@ -297,7 +302,7 @@ function eliminate(piece,team='unknown'){
     return;
   } else{
   piece.classList.add("eliminated");
-  piece.style.zIndex='30';
+  piece.style.zIndex='90';
   setTimeout(function(){
     remove(piece);
   }
@@ -607,9 +612,28 @@ function initializeGraph(scores){
 // Play tools
 function play(){
   startPlaying();
+  playButton.style.display="none";
+  stopButton.style.display="inline-block";
+  lastButton.style.display="none";
+  nextButton.style.display="none";
 }
 function stop(){
   stopPlaying();
+  playButton.style.display="inline-block";
+  stopButton.style.display="none";
+  lastButton.style.display="inline-block";
+  nextButton.style.display="inline-block"
+
+}
+function updateCurrentTurnDisplay(turn){
+  if (currentTurnNumber.innerText===`${turn}`)
+  {
+    return
+  } else{
+    currentTurnNumber.innerText=turn;
+    // currentTurnStartNumber.innerText=currentFrame;
+  }
+
 }
 function updateCurrentFrameDisplay(){
   currentFrameNumber.innerText=currentFrame;
@@ -623,7 +647,16 @@ function speed(){
   PLAYING_SPEED=parseFloat(speedInput.value);
   startPlaying();
 }
-
-
+function next(){
+  drawFrame(frames[currentFrame]);
+  currentFrame++;
+}
+function last(){
+  if (currentFrame>=2){
+    currentFrame-=2;
+    drawFrame(frames[currentFrame]);
+    currentFrame++;
+  }
+}
 
 

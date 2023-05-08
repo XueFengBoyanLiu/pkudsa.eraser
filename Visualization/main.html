@@ -86,12 +86,18 @@
           <button id="play" onclick="play()" style="display: none;">
             播放
           </button>
-          <button id="stop" onclick="stop()" style="display: block;">
+          <button id="stop" onclick="stop()" style="display: inline-block;">
             暂停
+          </button>
+          <button id="last" onclick="last()" style="display: none;">
+            上一帧
+          </button>
+          <button id="next" onclick="next()" style="display: none;">
+            下一帧
           </button>
         </div>
         <div id="frame-changer">
-          <div>当前回合：<span id="current-turn">0</span>（始于帧<span id="current-turn-start">0</span>）</div>
+          <div>当前回合：<span id="current-turn">0</span><!--（<span id="start-or-end">始</span>于帧<span id="current-turn-start">0</span>--></div>
           <div>当前帧：<span id="current-frame">0</span></div>
           <div>总帧数：<span id="total-frame">0</span></div>
           <input type="number" id="jump-input" min=0 value=0>

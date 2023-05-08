@@ -38,9 +38,12 @@ const speedInput=speedButton.previousElementSibling;
 const jumpButton=playtoolsContainer.querySelector('#jump');
 const jumpInput=jumpButton.previousElementSibling;
 const currentTurnNumber=playtoolsContainer.querySelector('#current-turn');
-const currentTurnStartNumber=playtoolsContainer.querySelector('#current-turn-start')
+// const currentTurnStartNumber=playtoolsContainer.querySelector('#current-turn-start')
+const startOrEnd=playtoolsContainer.querySelector('#start-or-end')
 const currentFrameNumber=playtoolsContainer.querySelector('#current-frame');
 const totalFrameNumber=playtoolsContainer.querySelector('#total-frame');
+const lastButton=playtoolsContainer.querySelector('#last');
+const nextButton=playtoolsContainer.querySelector('#next');
 
 
 
@@ -610,12 +613,17 @@ function initializeGraph(scores){
 function play(){
   startPlaying();
   playButton.style.display="none";
-  stopButton.style.display="block";
+  stopButton.style.display="inline-block";
+  lastButton.style.display="none";
+  nextButton.style.display="none";
 }
 function stop(){
   stopPlaying();
-  playButton.style.display="block";
+  playButton.style.display="inline-block";
   stopButton.style.display="none";
+  lastButton.style.display="inline-block";
+  nextButton.style.display="inline-block"
+
 }
 function updateCurrentTurnDisplay(turn){
   if (currentTurnNumber.innerText===`${turn}`)
@@ -623,7 +631,7 @@ function updateCurrentTurnDisplay(turn){
     return
   } else{
     currentTurnNumber.innerText=turn;
-    currentTurnStartNumber.innerText=currentFrame;
+    // currentTurnStartNumber.innerText=currentFrame;
   }
 
 }
@@ -639,7 +647,16 @@ function speed(){
   PLAYING_SPEED=parseFloat(speedInput.value);
   startPlaying();
 }
-
-
+function next(){
+  drawFrame(frames[currentFrame]);
+  currentFrame++;
+}
+function last(){
+  if (currentFrame>=2){
+    currentFrame-=2;
+    drawFrame(frames[currentFrame]);
+    currentFrame++;
+  }
+}
 
 

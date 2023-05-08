@@ -157,12 +157,14 @@ class Board:
         temp2 = self.board[x2, y2, :].copy()
         self.board[x1, y1, :], self.board[x2, y2, :] = temp2, temp1
 
-    def eliminate(self, func=lambda x: (len(x) - 2) ** 2):
+    def eliminate(self, func=lambda x: (len(x) - 2) ** 2,loc1,loc2):
+
         '''
         Eliminates connected elements from the mainboard and calculates the score.
 
         Args:
         func (function): A function that takes in a group of connected elements and returns a score.
+        loc1(tuple): one of the moved points
 
         Returns:
         tuple: A tuple that contains the total score (int) and the number of columns eliminated (array).
@@ -189,54 +191,105 @@ class Board:
                 pass
             return flag
 
-        # BFS
-        for i in range(self.size):
-            for j in range(self.size):
-                if matrix[i, j] not in self.colors:
-                    visited.add((i, j))
-                    continue
-                if (i, j) not in visited:
-                    flag = False
-                    visited.add((i, j))
-                    temp = []
-                    queue = [(i, j)]
+        while 1:
+            # BFS
+            if changed == np.zeros((self.size, self.size), bool):
+                for _ in [loc1,loc2]:
+                    if matrix[_] not in self.colors:
+                        visited.add(_)
+                        continue
+                    if _ not in visited:
+                        flag = False
+                        visited.add(_)
+                        temp = []
+                        queue = [_]
 
-                    while queue:
-                        x, y = queue.pop(0)
-                        if flag or check_flag(x, y):
-                            flag = True
-                        temp.append((x, y))
-                        if x + 1 < self.size and (x + 1, y) not in visited and matrix[x + 1][y] == matrix[x][y]:
-                            queue.append((x + 1, y))
-                            visited.add((x + 1, y))
-                        if x - 1 >= 0 and (x - 1, y) not in visited and matrix[x - 1][y] == matrix[x][y]:
-                            queue.append((x - 1, y))
-                            visited.add((x - 1, y))
-                        if y + 1 < self.size and (x, y + 1) not in visited and matrix[x][y + 1] == matrix[x][y]:
-                            queue.append((x, y + 1))
-                            visited.add((x, y + 1))
-                        if y - 1 >= 0 and (x, y - 1) not in visited and matrix[x][y - 1] == matrix[x][y]:
-                            queue.append((x, y - 1))
-                            visited.add((x, y - 1))
-                    if flag:
-                        res.append(temp)
-                        score_list.append(func(temp))
-                        for cordinates in temp:
-                            changed[cordinates] = True
+                        while queue:
+                            x, y = queue.pop(0)
+                            if flag or check_flag(x, y):
+                                flag = True
+                            temp.append((x, y))
+                            if x + 1 < self.size and (x + 1, y) not in visited and matrix[x + 1][y] == matrix[x][y]:
+                                queue.append((x + 1, y))
+                                visited.add((x + 1, y))
+                            if x - 1 >= 0 and (x - 1, y) not in visited and matrix[x - 1][y] == matrix[x][y]:
+                                queue.append((x - 1, y))
+                                visited.add((x - 1, y))
+                            if y + 1 < self.size and (x, y + 1) not in visited and matrix[x][y + 1] == matrix[x][y]:
+                                queue.append((x, y + 1))
+                                visited.add((x, y + 1))
+                            if y - 1 >= 0 and (x, y - 1) not in visited and matrix[x][y - 1] == matrix[x][y]:
+                                queue.append((x, y - 1))
+                                visited.add((x, y - 1))
+                        if flag:
+                            res.append(temp)
+                            score_list.append(func(temp))
+                            for cordinates in temp:
+                                changed[cordinates] = True
 
-        # Calculate the total score
-        score = sum(score_list)
+                    # Calculate the total score
+                score = sum(score_list)
 
-        # Eliminate the columns with connected elements
-        columns_eliminated = np.sum(changed, axis=0)
-        for i in range(self.size):
-            col = self.board[0:self.size, i, :]
-            indices = np.where(changed[:, i] == False)[0]
-            if len(indices) != self.size:
-                self.board[:, i, :] = np.concatenate(
-                    (col[indices, :], self.board[self.size:, i, :],
-                     np.full((columns_eliminated[i], 2), np.nan)), axis=0)
+                # Eliminate the columns with connected elements
+                columns_eliminated = np.sum(changed, axis=0)
+                for i in range(self.size):
+                    col = self.board[0:self.size, i, :]
+                    indices = np.where(changed[:, i] == False)[0]
+                    if len(indices) != self.size:
+                        self.board[:, i, :] = np.concatenate(
+                            (col[indices, :], self.board[self.size:, i, :],
+                             np.full((columns_eliminated[i], 2), np.nan)), axis=0)
+                if score==0:
+                    break
+            else:
 
-        # Return the total score and the number of columns eliminated
-        return score, columns_eliminated
+                for i in range(self.size):
+                    for j in np.where(columns_eliminated!=0)[0]:
+                        if matrix[i, j] not in self.colors:
+                            visited.add((i, j))
+                            continue
+                        if (i, j) not in visited:
+                            flag = False
+                            visited.add((i, j))
+                            temp = []
+                            queue = [(i, j)]
+
+                            while queue:
+                                x, y = queue.pop(0)
+                                if flag or check_flag(x, y):
+                                    flag = True
+                                temp.append((x, y))
+                                if x + 1 < self.size and (x + 1, y) not in visited and matrix[x + 1][y] == matrix[x][y]:
+                                    queue.append((x + 1, y))
+                                    visited.add((x + 1, y))
+                                if x - 1 >= 0 and (x - 1, y) not in visited and matrix[x - 1][y] == matrix[x][y]:
+                                    queue.append((x - 1, y))
+                                    visited.add((x - 1, y))
+                                if y + 1 < self.size and (x, y + 1) not in visited and matrix[x][y + 1] == matrix[x][y]:
+                                    queue.append((x, y + 1))
+                                    visited.add((x, y + 1))
+                                if y - 1 >= 0 and (x, y - 1) not in visited and matrix[x][y - 1] == matrix[x][y]:
+                                    queue.append((x, y - 1))
+                                    visited.add((x, y - 1))
+                            if flag:
+                                res.append(temp)
+                                score_list.append(func(temp))
+                                for cordinates in temp:
+                                    changed[cordinates] = True
+
+                # Calculate the total score
+                score = sum(score_list)
+
+                # Eliminate the columns with connected elements
+                columns_eliminated = np.sum(changed, axis=0)
+                for i in range(self.size):
+                    col = self.board[0:self.size, i, :]
+                    indices = np.where(changed[:, i] == False)[0]
+                    if len(indices) != self.size:
+                        self.board[:, i, :] = np.concatenate(
+                            (col[indices, :], self.board[self.size:, i, :],
+                             np.full((columns_eliminated[i], 2), np.nan)), axis=0)
+                if score==0:
+                    break
+
 

@@ -89,6 +89,7 @@ class Game_play():
             self.terminated = True
             self.replay['winner'] = 1 - side
             self.replay['exitStatus'] = 1
+            import time
             self.replay['errorMessage'] = current_player.error
             return
 

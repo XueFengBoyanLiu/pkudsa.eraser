@@ -495,7 +495,9 @@ function initializeGraph(scores){
         },
       },
       {
-        type: 'none',
+        type: 'custom', // 使用 'custom' 类型
+        renderItem: function() {}, // 定义一个空的 renderItem 函数
+        data: [] // 无数据
       }
     ]
   };

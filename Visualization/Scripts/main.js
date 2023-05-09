@@ -25,7 +25,7 @@ const currentBoard={};
 const player={0:'left',1:'right'}
 // Green Blue Orange Pink Colors
 const colorArray=["rgb(13, 211, 82)","rgb(22, 218, 224)","rgb(224, 134, 60)","rgb(243, 121, 137)","rgb(244, 67, 54)","rgb(255, 193, 7)","rgb(96, 125, 139)","rgb(0, 188, 212)","rgb(103, 58, 183)","rgb(233, 30, 99)","rgb(255, 152, 0)","rgb(3, 169, 244)"];
-let colorShift=8;
+let colorShift=4;
 
 let currentFrame=0;
 let isPlaying=false;

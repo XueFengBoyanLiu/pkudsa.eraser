@@ -3,8 +3,9 @@ import random
 from eraserconfig import *
 
 class Board:
-    def __init__(self, size=BOARD_SIZE, board_num=N_ROWS//BOARD_SIZE,
-            colors=np.array(list(COLORS.keys()))):
+
+    def __init__(self, size=BOARD_SIZE, board_num=N_ROWS // BOARD_SIZE,
+                 colors=np.array(list(COLORS.keys())), seed=None):
         '''
         Initialize board instance.
 
@@ -16,6 +17,8 @@ class Board:
         self.size = size
         self.board_num = board_num
         self.colors = colors
+        if seed:
+            np.random.seed(seed)
         self.board = np.concatenate([self.generate_board() for i in np.arange(board_num)])
         self.move_dict = {}
 

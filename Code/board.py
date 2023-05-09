@@ -256,7 +256,6 @@ class Board:
         self.changed = new_changed
         # Calculate the total score
         score = sum(score_list)
-        t2 = time.perf_counter()
 
         # Eliminate the columns with connected elements
         columns_eliminated = np.sum(self.changed, axis=0)
@@ -267,7 +266,6 @@ class Board:
                 self.board[:, i, :] = np.concatenate(
                     (col[indices, :], self.board[self.size:, i, :],
                      np.full((columns_eliminated[i], 2), np.nan)), axis=0)
-        t3 = time.perf_counter()
         # Return the total score nd the number of columns eliminated
         return score, columns_eliminated
 

@@ -18,16 +18,16 @@ def serialize_np(obj):
     raise TypeError ("Type %s is not serializable" % type(obj))
 
 class Game_play():
-    def __init__(self, player_1, player_2, board=None, order=0):
+    def __init__(self, player_1, player_2, board=None, order=0, seed=None):
         '''
         Parameters
         ----------
-        player_1, player_2: imported from player's code
+        player_1, player_2: the player's code
         '''
-        self.players = (Player_safe(player_1), Player_safe(player_2))
+        self.players = (Player_safe(player_1.Robot()), Player_safe(player_2.Robot()))
         self.terminated = False
         # the players are wrapped by exception_manager.py
-        self.board = Board() if board is None else board
+        self.board = Board(seed=seed) if board is None else board
         self.remained_blocks = np.full(BOARD_SIZE, N_ROWS - BOARD_SIZE - 2)
 
         self.turn = 0
@@ -215,6 +215,6 @@ if __name__ == '__main__':
     import failed_test_bot as fb
     bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
             fb.FailedRobot4(), fb.FailedRobot5()]
-    game = Game_runner(tp, bots[3])
+    game = Game_runner(test_bot, test_bot)
     print(game.start_games())
     game.save_game_log('r1.json', 'r2.json')

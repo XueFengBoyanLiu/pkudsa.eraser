@@ -272,7 +272,6 @@ class Board:
         return score, columns_eliminated
 
     def get_op_scores(self):
-        t4 = time.perf_counter()
         op_scores = []
 
         def move(action):
@@ -287,5 +286,4 @@ class Board:
 
         for op in self.get_info()[1]:
             op_scores.append(move(op))
-        t5 = time.perf_counter()
         return op_scores

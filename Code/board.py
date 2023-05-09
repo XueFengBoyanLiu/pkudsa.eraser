@@ -2,11 +2,9 @@ import numpy as np
 import random
 from eraserconfig import *
 
-
 class Board:
-
-    def __init__(self, size=BOARD_SIZE, board_num=N_ROWS // BOARD_SIZE,
-                 colors=np.array(list(COLORS.keys()))):
+    def __init__(self, size=BOARD_SIZE, board_num=N_ROWS//BOARD_SIZE,
+            colors=np.array(list(COLORS.keys()))):
         '''
         Initialize board instance.
 
@@ -28,12 +26,11 @@ class Board:
 
         # Add ID matrix to the main board
         self.board = np.dstack((self.board, self.id_matrix))
-        self.changed = np.zeros((BOARD_SIZE, BOARD_SIZE), bool)
-
+                
     @property
     def mainboard(self):
         return self.board[:self.size, :self.size, 0]
-
+        
     def copy(self):
         newboard = self.board.copy()
         copied = Board()
@@ -51,9 +48,9 @@ class Board:
 
         idx = np.arange(len(self.colors))
         np.random.shuffle(idx)
-        remain = [1, ] * (self.size % len(self.colors)) + [0, ] * (len(self.colors) - (self.size % len(self.colors)))
+        remain = [1,] * (self.size % len(self.colors)) + [0,] * (len(self.colors) - (self.size % len(self.colors)))
         a = np.hstack([np.full((self.size, self.size // len(self.colors) + remain[i]),
-                               self.colors[idx[i]]) for i in range(len(self.colors))]).reshape(
+            self.colors[idx[i]]) for i in range(len(self.colors))]).reshape(
             (self.size ** 2, 1))
         np.random.shuffle(a)  # Shuffle the order of color blocks.
 
@@ -127,44 +124,19 @@ class Board:
               information. The second element is a list of all possible operations that can be performed on the
               sub-board to make it valid.
         '''
-
-        def check_connected(loc):
-            x, y = loc
-            if (y + 2 < self.size and (self.mainboard[x, y + 2] == self.mainboard[x, y + 1] == self.mainboard[
-                x, y])) or (
-                    x + 2 < self.size and (self.mainboard[x + 2, y] == self.mainboard[x + 1, y] == self.mainboard[
-                x, y])) or (
-                    y - 2 >= 0 and (self.mainboard[x, y - 2] == self.mainboard[x, y - 1] == self.mainboard[
-                x, y])) or (
-                    x - 2 >= 0 and (self.mainboard[x - 2, y] == self.mainboard[x - 1, y] == self.mainboard[
-                x, y])) or (
-                    y + 1 < self.size and y > 0 and (self.mainboard[x, y - 1] == self.mainboard[x, y + 1] ==
-                                                     self.mainboard[
-                                                         x, y])) or (
-                    x + 1 < self.size and x > 0 and (self.mainboard[x - 1, y] == self.mainboard[x + 1, y] ==
-                                                     self.mainboard[
-                                                         x, y])):
-                return True
-            return False
-
         operations = []
         for i in range(self.size - 1):
             for j in range(self.size):
-                temp1 = self.mainboard[i, j]
-                temp2 = self.mainboard[i + 1, j]
-                self.mainboard[i, j], self.mainboard[i + 1, j] = temp2, temp1
-                if check_connected((i, j)) or check_connected((i + 1, j)):
+                self.mainboard[i, j], self.mainboard[i + 1, j] = self.mainboard[i + 1, j], self.mainboard[i, j]
+                if self.check(self.mainboard):
                     operations.append([(i, j), (i + 1, j)])
-                self.mainboard[i, j], self.mainboard[i + 1, j] = temp1, temp2
-
+                self.mainboard[i, j], self.mainboard[i + 1, j] = self.mainboard[i + 1, j], self.mainboard[i, j]
         for j in range(self.size - 1):
             for i in range(self.size):
-                temp1 = self.mainboard[i, j]
-                temp2 = self.mainboard[i, j + 1]
-                self.mainboard[i, j], self.mainboard[i, j + 1] = temp2, temp1
-                if check_connected((i, j)) or check_connected((i, j + 1)):
+                self.mainboard[i, j], self.mainboard[i, j + 1] = self.mainboard[i, j + 1], self.mainboard[i, j]
+                if self.check(self.mainboard):
                     operations.append([(i, j), (i, j + 1)])
-                self.mainboard[i, j], self.mainboard[i, j + 1] = temp1, temp2
+                self.mainboard[i, j], self.mainboard[i, j + 1] = self.mainboard[i, j + 1], self.mainboard[i, j]
         return [self.board[:, :, 0], operations]
 
     def change(self, loc1, loc2, *args):
@@ -184,8 +156,6 @@ class Board:
         temp1 = self.board[x1, y1, :].copy()
         temp2 = self.board[x2, y2, :].copy()
         self.board[x1, y1, :], self.board[x2, y2, :] = temp2, temp1
-        self.changed[loc1] = True
-        self.changed[loc2] = True
 
     def eliminate(self, func=lambda x: (len(x) - 2) ** 2):
         '''
@@ -198,90 +168,74 @@ class Board:
         tuple: A tuple that contains the total score (int) and the number of columns eliminated (array).
         '''
         # Scan the board for connected elements
+        matrix = self.board[:, :, 0]
         visited = set()
         res = []
         score_list = []
+        changed = np.zeros((self.size, self.size), bool)
 
         # Check if it belongs to connected elements
         def check_flag(x, y):
-            if (y + 2 < self.size and self.mainboard[x, y + 2] == self.mainboard[x, y + 1] == self.mainboard[
-                x, y]) or (
-                    x + 2 < self.size and self.mainboard[x + 2, y] == self.mainboard[x + 1, y] == self.mainboard[
-                x, y]):
-                return True
-            return False
+            flag = False
+            try:
+                if matrix[x, y + 2] == matrix[x, y + 1] == matrix[x, y]:
+                    flag = True
+            except IndexError:
+                pass
+            try:
+                if matrix[x + 2, y] == matrix[x + 1, y] == matrix[x, y]:
+                    flag = True
+            except IndexError:
+                pass
+            return flag
 
-        new_changed = np.zeros((self.size, self.size), bool)
         # BFS
-        indices = np.argwhere(self.changed == True)
-        for loc in indices:
-            i, j = loc
-            if self.mainboard[i, j] not in self.colors:
-                visited.add((i, j))
-                continue
-            if (i, j) not in visited:
-                flag = False
-                visited.add((i, j))
-                temp = []
-                queue = [(i, j)]
+        for i in range(self.size):
+            for j in range(self.size):
+                if matrix[i, j] not in self.colors:
+                    visited.add((i, j))
+                    continue
+                if (i, j) not in visited:
+                    flag = False
+                    visited.add((i, j))
+                    temp = []
+                    queue = [(i, j)]
 
-                while queue:
-                    x, y = queue.pop(0)
-                    if flag or check_flag(x, y):
-                        flag = True
-                    temp.append((x, y))
-                    if x + 1 < self.size and (x + 1, y) not in visited and self.mainboard[x + 1][y] == \
-                            self.mainboard[x][y]:
-                        queue.append((x + 1, y))
-                        visited.add((x + 1, y))
-                    if x - 1 >= 0 and (x - 1, y) not in visited and self.mainboard[x - 1][y] == \
-                            self.mainboard[x][
-                                y]:
-                        queue.append((x - 1, y))
-                        visited.add((x - 1, y))
-                    if y + 1 < self.size and (x, y + 1) not in visited and self.mainboard[x][y + 1] == \
-                            self.mainboard[x][y]:
-                        queue.append((x, y + 1))
-                        visited.add((x, y + 1))
-                    if y - 1 >= 0 and (x, y - 1) not in visited and self.mainboard[x][y - 1] == \
-                            self.mainboard[x][
-                                y]:
-                        queue.append((x, y - 1))
-                        visited.add((x, y - 1))
-                if flag:
-                    res.append(temp)
-                    score_list.append(func(temp))
-                    for coordinates in temp:
-                        new_changed[coordinates] = True
-        self.changed = new_changed
+                    while queue:
+                        x, y = queue.pop(0)
+                        if flag or check_flag(x, y):
+                            flag = True
+                        temp.append((x, y))
+                        if x + 1 < self.size and (x + 1, y) not in visited and matrix[x + 1][y] == matrix[x][y]:
+                            queue.append((x + 1, y))
+                            visited.add((x + 1, y))
+                        if x - 1 >= 0 and (x - 1, y) not in visited and matrix[x - 1][y] == matrix[x][y]:
+                            queue.append((x - 1, y))
+                            visited.add((x - 1, y))
+                        if y + 1 < self.size and (x, y + 1) not in visited and matrix[x][y + 1] == matrix[x][y]:
+                            queue.append((x, y + 1))
+                            visited.add((x, y + 1))
+                        if y - 1 >= 0 and (x, y - 1) not in visited and matrix[x][y - 1] == matrix[x][y]:
+                            queue.append((x, y - 1))
+                            visited.add((x, y - 1))
+                    if flag:
+                        res.append(temp)
+                        score_list.append(func(temp))
+                        for cordinates in temp:
+                            changed[cordinates] = True
+
         # Calculate the total score
         score = sum(score_list)
 
         # Eliminate the columns with connected elements
-        columns_eliminated = np.sum(self.changed, axis=0)
+        columns_eliminated = np.sum(changed, axis=0)
         for i in range(self.size):
             col = self.board[0:self.size, i, :]
-            indices = np.where(self.changed[:, i] == False)[0]
+            indices = np.where(changed[:, i] == False)[0]
             if len(indices) != self.size:
                 self.board[:, i, :] = np.concatenate(
                     (col[indices, :], self.board[self.size:, i, :],
                      np.full((columns_eliminated[i], 2), np.nan)), axis=0)
-        # Return the total score nd the number of columns eliminated
+
+        # Return the total score and the number of columns eliminated
         return score, columns_eliminated
-
-    def get_op_scores(self):
-        op_scores = []
-
-        def move(action):
-            (x1, y1), (x2, y2) = action
-            new_board = self.copy()
-            new_board.change((x1, y1), (x2, y2))
-            total_score, columns_eliminated = new_board.eliminate()
-            while columns_eliminated.sum() != 0 and not (self.mainboard == 'nan').any():
-                score, columns_eliminated = new_board.eliminate()
-                total_score += score
-            return action, total_score, new_board.mainboard
-
-        for op in self.get_info()[1]:
-            op_scores.append(move(op))
-        return op_scores

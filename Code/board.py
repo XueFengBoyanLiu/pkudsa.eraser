@@ -26,8 +26,16 @@ class Board:
 
         # Add ID matrix to the main board
         self.board = np.dstack((self.board, self.id_matrix))
-        # Extract the first sub-board to use as the main board.
-        self.mainboard = self.board[:self.size, :self.size, 0]
+                
+    @property
+    def mainboard(self):
+        return self.board[:self.size, :self.size, 0]
+        
+    def copy(self):
+        newboard = self.board.copy()
+        copied = Board()
+        copied.board = newboard
+        return copied
 
     def generate_board(self):
         '''
@@ -41,7 +49,7 @@ class Board:
         idx = np.arange(len(self.colors))
         np.random.shuffle(idx)
         remain = [1,] * (self.size % len(self.colors)) + [0,] * (len(self.colors) - (self.size % len(self.colors)))
-        a = np.vstack([np.full((self.size, self.size // len(self.colors) + remain[i]),
+        a = np.hstack([np.full((self.size, self.size // len(self.colors) + remain[i]),
             self.colors[idx[i]]) for i in range(len(self.colors))]).reshape(
             (self.size ** 2, 1))
         np.random.shuffle(a)  # Shuffle the order of color blocks.
@@ -130,7 +138,7 @@ class Board:
                     operations.append([(i, j), (i, j + 1)])
                 self.mainboard[i, j], self.mainboard[i, j + 1] = self.mainboard[i, j + 1], self.mainboard[i, j]
         return [self.board[:, :, 0], operations]
-    
+
     def change(self, loc1, loc2, *args):
         '''
         Exchange the colors of two adjacent cells in the current sub-board.
@@ -149,28 +157,54 @@ class Board:
         temp2 = self.board[x2, y2, :].copy()
         self.board[x1, y1, :], self.board[x2, y2, :] = temp2, temp1
 
-    def scan_for_connected(self):
+    def eliminate(self, func=lambda x: (len(x) - 2) ** 2):
         '''
-        Scan the mainboard for connected elements.
+        Eliminates connected elements from the mainboard and calculates the score.
+
+        Args:
+        func (function): A function that takes in a group of connected elements and returns a score.
 
         Returns:
-        list: A list of connected elements groups. Each group consists of elements with the same color that are
-              connected in a row or column and has three or more elements.
+        tuple: A tuple that contains the total score (int) and the number of columns eliminated (array).
         '''
+        # Scan the board for connected elements
         matrix = self.board[:, :, 0]
         visited = set()
         res = []
+        score_list = []
+        changed = np.zeros((self.size, self.size), bool)
+
+        # Check if it belongs to connected elements
+        def check_flag(x, y):
+            flag = False
+            try:
+                if matrix[x, y + 2] == matrix[x, y + 1] == matrix[x, y]:
+                    flag = True
+            except IndexError:
+                pass
+            try:
+                if matrix[x + 2, y] == matrix[x + 1, y] == matrix[x, y]:
+                    flag = True
+            except IndexError:
+                pass
+            return flag
+
+        # BFS
         for i in range(self.size):
             for j in range(self.size):
                 if matrix[i, j] not in self.colors:
                     visited.add((i, j))
                     continue
                 if (i, j) not in visited:
+                    flag = False
                     visited.add((i, j))
                     temp = []
                     queue = [(i, j)]
+
                     while queue:
                         x, y = queue.pop(0)
+                        if flag or check_flag(x, y):
+                            flag = True
                         temp.append((x, y))
                         if x + 1 < self.size and (x + 1, y) not in visited and matrix[x + 1][y] == matrix[x][y]:
                             queue.append((x + 1, y))
@@ -184,48 +218,14 @@ class Board:
                         if y - 1 >= 0 and (x, y - 1) not in visited and matrix[x][y - 1] == matrix[x][y]:
                             queue.append((x, y - 1))
                             visited.add((x, y - 1))
-                    res.append(temp)
-        # Iterate through every element on the mainboard and perform a breadth-first search for connected elements.
-        # Store each group of connected elements in the res list.
-        list_of_connected_elements = []
-        for sublst in res:
-            lx=sorted(sorted(sublst, key=lambda x: x[1]), key=lambda x: x[0])
-            ly=sorted(sorted(sublst, key=lambda x: x[0]), key=lambda x: x[1])
-            for i in range(len(sublst)-2):
-                if sublst not in list_of_connected_elements and lx[i][0]==lx[i+1][0]==lx[i+2][0] and lx[i][1]+2==lx[i+1][1]+1==lx[i+2][1]:
-                    list_of_connected_elements.append(sublst)
-                    break
-            for j in range(len(sublst)-2):
-                if sublst not in list_of_connected_elements and ly[j][1]==ly[j+1][1]==ly[j+2][1] and ly[j][0]+2==ly[j+1][0]+1==ly[j+2][0]:
-                    list_of_connected_elements.append(sublst)
-                    break
-        # Filter out groups that have three or more connected elements in a row or column and return the list.
-        return list_of_connected_elements
-
-    def eliminate(self, func=lambda x: (len(x) - 2) ** 2):
-        '''
-        Eliminates connected elements from the mainboard and calculates the score.
-
-        Args:
-        func (function): A function that takes in a group of connected elements and returns a score.
-
-        Returns:
-        tuple: A tuple that contains the total score (int) and the number of columns eliminated (array).
-        '''
-        # Scan the board for connected elements
-        list_of_connected_elements = self.scan_for_connected()
-
-        # Calculate the score for each connected element
-        scorelist = list(map(func, list_of_connected_elements))
+                    if flag:
+                        res.append(temp)
+                        score_list.append(func(temp))
+                        for cordinates in temp:
+                            changed[cordinates] = True
 
         # Calculate the total score
-        score = sum(scorelist)
-
-        # Mark the connected elements as changed
-        changed = np.zeros((self.size, self.size), bool)
-        for sublst in list_of_connected_elements:
-            for cordinates in sublst:
-                changed[cordinates] = True
+        score = sum(score_list)
 
         # Eliminate the columns with connected elements
         columns_eliminated = np.sum(changed, axis=0)
@@ -239,4 +239,3 @@ class Board:
 
         # Return the total score and the number of columns eliminated
         return score, columns_eliminated
-

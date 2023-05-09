@@ -1,16 +1,8 @@
 ## the game interaction
-from __future__ import annotations
+#from __future__ import annotations
 from board import *
 from exception_manager import *
 from eraserconfig import *
-
-#from player1 import Robot as P1
-#from player2 import Robot as P2
-## player class: Robot (the name may change)
-## method: move(np.array: current_board) -> tuple: 2 blocks to move
-## attribute: name(str)
-#player_safe_1 = Player(P1)
-#player_safe_2 = Player(P2)
 
 import threading
 import time
@@ -26,7 +18,7 @@ def serialize_np(obj):
     raise TypeError ("Type %s is not serializable" % type(obj))
 
 class Game_play():
-    def __init__(self, player_1, player_2, board=None):
+    def __init__(self, player_1, player_2, board=None, order=0):
         '''
         Parameters
         ----------
@@ -36,16 +28,18 @@ class Game_play():
         self.terminated = False
         # the players are wrapped by exception_manager.py
         self.board = Board() if board is None else board
-        self.remained_blocks = [N_ROWS - BOARD_SIZE for _ in range(BOARD_SIZE)]
+        self.remained_blocks = np.full(BOARD_SIZE, N_ROWS - BOARD_SIZE - 2)
 
         self.turn = 0
         self.replay = {'totalFrames': 0,
-                'totalRemains': (N_ROWS - BOARD_SIZE),
+                'totalRemains': (N_ROWS - BOARD_SIZE - 2),
                 'scores': {},
                 'exitStatus': 0,
                 'errorMessage': '',
                 'winner': -1,
-                'frames': []}
+                'frames': [],
+                'extra': '',
+                'order': order}
 
         self.scores_history = []
         self.score = [0, 0]
@@ -132,7 +126,7 @@ class Game_play():
         board_status = self.board.peek_board()
         frame = {'turnNumber': self.turn,
                 'currentPlayer': self.turn & 1,
-                'remainedBarStatus': self.remained_blocks}
+                'remainedBarStatus': self.remained_blocks.clip(0, None)}
         board_status = {'nan' if board_status[i, j, 0] == 'nan'
                         else board_status[i, j, 1] + 'b' +
                         COLORS[board_status[i, j, 0]]: [i, j]
@@ -163,6 +157,9 @@ class Game_play():
         self.replay['scores'] = {'left': history[:, 0],
                                 'right': history[:, 1],
                                 'relative': history[:, 0] - history[:, 1]}
+        self.replay['length'] = self.turn
+        self.replay['reason'] = self.log_data['reason']
+        self.replay['extra'] = self.log_data['score']
         print('Game ends')
 
     def save_log(self, path):
@@ -178,7 +175,8 @@ class Game_play():
                 'errorStatus': self.replay['exitStatus'] - 1,
                 'length': self.turn,
                 'score': 1000,
-                'reason': None}
+                'reason': None,
+                'order': self.replay['order']}
         if not self.replay['exitStatus']:
             log['score'] = abs(self.score[0] - self.score[1])
             if self.turn < 2 * MAX_TURN:
@@ -186,21 +184,22 @@ class Game_play():
             else:
                 log['reason'] = 'Reach turn limit'
         else:
-            log['reason'] = 'An error occurred during the game, see error message for details'
-            log['errorMessage'] = self.replay['errorMessage'].split('\n')[-2],
+            log['reason'] = 'An error occurred: '
+            log['errorMessage'] = self.replay['errorMessage'].split('\n')[-2]
+            log['reason'] += log['errorMessage']
         return log
 
 class Game_runner():
     def __init__(self, p1, p2):
         self.board1 = Board()
-        self.board2 = Board()
+        self.board2 = self.board1.copy()
         self.p1 = p1
         self.p2 = p2
 
     def start_games(self):
-        self.game1 = Game_play(self.p1, self.p2, board=self.board1)
+        self.game1 = Game_play(self.p1, self.p2, board=self.board1, order=0)
         self.game1.start_game()
-        self.game2 = Game_play(self.p2, self.p1, board=self.board2)
+        self.game2 = Game_play(self.p2, self.p1, board=self.board2, order=1)
         self.game2.start_game()
         log1, log2 = self.game1.log_data, self.game2.log_data
         log2['winner'] = 1 - log2['winner']
@@ -216,6 +215,6 @@ if __name__ == '__main__':
     import failed_test_bot as fb
     bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
             fb.FailedRobot4(), fb.FailedRobot5()]
-    game = Game_runner(tp, tp)
+    game = Game_runner(tp, bots[3])
     print(game.start_games())
     game.save_game_log('r1.json', 'r2.json')

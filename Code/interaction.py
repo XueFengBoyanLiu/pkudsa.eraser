@@ -98,7 +98,7 @@ class Game_play():
         # eliminating blocks
         while True:
             pts, columns_eliminated = self.board.eliminate()
-            if columns_eliminated.sum() == 0:
+            if pts == 0:
                 break
             self.remained_blocks = self.remained_blocks - columns_eliminated
             self.score[side] += pts
@@ -114,8 +114,6 @@ class Game_play():
         Given current board, get a move from the current player
         Returns: ((x1, y1), (x2, y2))
         '''
-        #if self.board.get_info()[1] == []:
-            #print('no moves available')
         return player('move', *self.board.get_info())
 
     def record_frame(self):
@@ -149,7 +147,6 @@ class Game_play():
 
     def end_game(self):
         '''End the game and format the replay as .json file'''
-        print('recording data')
         if self.replay['errorStatus'] == -1:
             self.replay['winner'] = np.argmax(self.score)
 
@@ -234,5 +231,4 @@ if __name__ == '__main__':
     print(b - a)
     print(game.replay['errorMessage'])
     print(game.replay['reason'])
-    print(game.replay['scores'])
     game.save_log('replay.json')

@@ -72,7 +72,7 @@ class Game_play():
         if self.turn >= MAX_TURN * 2:
             self.terminated = True
             return
-        if (self.board.peek_board()[:BOARD_SIZE, :BOARD_SIZE] == 'nan').any():
+        if (self.board.mainboard == 'nan').any():
             self.terminated = True
 
         # update turn data
@@ -149,6 +149,7 @@ class Game_play():
 
     def end_game(self):
         '''End the game and format the replay as .json file'''
+        print('recording data')
         if self.replay['errorStatus'] == -1:
             self.replay['winner'] = np.argmax(self.score)
 
@@ -198,7 +199,7 @@ class Game_play():
             log['reason'] += log['errorMessage']
         return log
 """
-
+'''
 class Game_runner():
     def __init__(self, p1, p2):
         self.board1 = Board()
@@ -218,7 +219,7 @@ class Game_runner():
     def save_game_log(self, path1, path2):
         self.game1.save_log(path1)
         self.game2.save_log(path2)
-
+'''
 if __name__ == '__main__':
     import test_bot
     tp = test_bot.Robot()
@@ -226,7 +227,12 @@ if __name__ == '__main__':
     bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
             fb.FailedRobot4(), fb.FailedRobot5()]
     game = Game_play(test_bot, test_bot)
+    import time
+    a = time.time()
     game.start_game()
+    b = time.time()
+    print(b - a)
     print(game.replay['errorMessage'])
     print(game.replay['reason'])
-    game.save_log('r1.json')
+    print(game.replay['scores'])
+    game.save_log('replay.json')

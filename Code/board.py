@@ -181,6 +181,8 @@ class Board:
 
         for i in range(self.size):
             for j in range(self.size):
+                if arr[i, j] == 'nan':
+                    continue
                 if i <= self.size - 3 and (arr[i+1:i+3, j] == arr[i, j]).all():
                     to_visit.append([i, j])
                 if j <= self.size - 3 and (arr[i, j+1:j+3] == arr[i, j]).all():

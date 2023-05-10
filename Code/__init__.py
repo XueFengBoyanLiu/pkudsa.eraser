@@ -4,6 +4,7 @@ eraser_path = path.join(path.dirname(__file__), 'pkudsa.eraser', 'Code')
 sys.path.append(eraser_path)
 from interaction import Game_play
 import config
+import time
 
 #from functools import lru_cache
 import json
@@ -36,16 +37,16 @@ class EraserMatch(BasePairMatch):
         希望能够从Game_play中得到直接传出的比赛结果
         '''
         
-        play=Game_play(d_local['players'][0],d_local['players'][1],d_local['names'],swapped=cls.init_params['order'])
+        if d_local['who_first'] != '4' or d_local['rid'] % 2 == 0:
+            cls.last_seed = int(time.time() * 1000)
+        play=Game_play(d_local['players'][0],d_local['players'][1],
+                d_local['names'], swapped=cls.init_params['order'], seed=cls.last_seed)
         play.perform_turn()
         play.start_game()
-        filename = 'replay.json'
-        with open(filename, 'w') as f:
-            replay=json.loads(f)
         
-        return {'order':None,'winner':replay['winner'],'scores':replay['scores'],'Errormessage':replay['errorMessage']}
+        return play.log_data
     @classmethod 
-    def swap_fields(cls,d_local,d_global):
+    def swap_fields(cls, d_local, d_global):
         '''
         交换先后手比赛
         '''
@@ -61,7 +62,7 @@ class EraserMatch(BasePairMatch):
         返回比赛结果元组
         '''
         
-        return tuple(match_log['winner'],match_log['scores'],match_log['Errormessage'])
+        return tuple(match_log['winner'], match_log['scores'], match_log['Errormessage'])
 
     @classmethod
     def runner_fail_log(cls, winner, descrip, d_local, d_global):

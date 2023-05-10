@@ -34,7 +34,7 @@ class Game_play():
         self.replay = {'totalFrames': 0,
                 'totalRemains': (N_ROWS - BOARD_SIZE - 2),
                 'scores': {},
-                'exitStatus': 0,
+                'errorStatus': -1,
                 'errorMessage': '',
                 'winner': -1,
                 'frames': [],
@@ -88,8 +88,7 @@ class Game_play():
         if current_player.error is not None:
             self.terminated = True
             self.replay['winner'] = 1 - side
-            self.replay['exitStatus'] = 1
-            import time
+            self.replay['errorStatus'] = side
             self.replay['errorMessage'] = current_player.error
             return
 
@@ -146,12 +145,11 @@ class Game_play():
         while not self.terminated:
             self.perform_turn()
         self.end_game()
+        return self.replay
 
     def end_game(self):
         '''End the game and format the replay as .json file'''
-        self.terminated = True
-
-        if not self.replay['exitStatus']:
+        if self.replay['errorStatus'] == -1:
             self.replay['winner'] = np.argmax(self.score)
 
         history = np.vstack(self.scores_history)
@@ -159,8 +157,17 @@ class Game_play():
                                 'right': history[:, 1],
                                 'relative': history[:, 0] - history[:, 1]}
         self.replay['length'] = self.turn
-        self.replay['reason'] = self.log_data['reason']
-        self.replay['extra'] = self.log_data['score']
+
+        if self.replay['errorStatus'] == -1:
+            self.replay['extra'] = abs(self.score[0] - self.score[1])
+            if self.turn < 2 * MAX_TURN:
+                self.replay['reason'] = 'Run out of blocks'
+            else:
+                self.replay['reason'] = 'Reach turn limit'
+        else:
+            self.replay['extra'] = 1000
+            self.replay['reason'] = 'An error occurred: '
+            self.replay['reason'] += self.replay['errorMessage'].split('\n')[-2]
         print('Game ends')
 
     def save_log(self, path):
@@ -168,17 +175,18 @@ class Game_play():
             json.dump(self.replay, f, default = serialize_np)
         return
 
+"""
     @property
     def log_data(self):
         '''Return the log data to server'''
         log = {'winner': self.replay['winner'],
                 'errorMessage': '',
-                'errorStatus': self.replay['exitStatus'] - 1,
+                'errorStatus': self.replay['errorStatus'] - 1,
                 'length': self.turn,
                 'score': 1000,
                 'reason': None,
                 'order': self.replay['order']}
-        if not self.replay['exitStatus']:
+        if not self.replay['errorStatus']:
             log['score'] = abs(self.score[0] - self.score[1])
             if self.turn < 2 * MAX_TURN:
                 log['reason'] = 'Run out of blocks'
@@ -189,6 +197,7 @@ class Game_play():
             log['errorMessage'] = self.replay['errorMessage'].split('\n')[-2]
             log['reason'] += log['errorMessage']
         return log
+"""
 
 class Game_runner():
     def __init__(self, p1, p2):
@@ -216,6 +225,8 @@ if __name__ == '__main__':
     import failed_test_bot as fb
     bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
             fb.FailedRobot4(), fb.FailedRobot5()]
-    game = Game_runner(test_bot, test_bot)
-    print(game.start_games())
-    game.save_game_log('r1.json', 'r2.json')
+    game = Game_play(test_bot, test_bot)
+    game.start_game()
+    print(game.replay['errorMessage'])
+    print(game.replay['reason'])
+    game.save_log('r1.json')

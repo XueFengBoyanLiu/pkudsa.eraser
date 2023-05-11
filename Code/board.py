@@ -1,7 +1,6 @@
 import numpy as np
 import random
 from eraserconfig import *
-import time
 
 class Board:
 
@@ -30,7 +29,6 @@ class Board:
 
         # Add ID matrix to the main board
         self.board = np.dstack((self.board, self.id_matrix))
-        self.times = {'get_info':0, 'eliminate':0, 'falling':0}
 
     @property
     def mainboard(self):
@@ -121,7 +119,6 @@ class Board:
               information. The second element is a list of all possible operations that can be performed on the
               sub-board to make it valid.
         '''
-        start = time.perf_counter()
         operations = []
         arr = self.mainboard
         arrt = self.mainboard.T
@@ -165,9 +162,8 @@ class Board:
                         (arrt[i+1, j] == arrt[i, [j-1, j+1]]).all()):
                     operations.append(((j, i), (j, i + 1)))
                     continue
-        end = time.perf_counter()
-        self.times['get_info'] += end - start
-        return [self.board[:, :, 0], operations]
+        cb = self.board[:, :, 0].copy()
+        return [cb, operations]
 
     def change(self, loc1, loc2, *args):
         '''
@@ -198,7 +194,6 @@ class Board:
         tuple: A tuple that contains the total score (int) and the number of columns eliminated (array).
         '''
         # Scan the board for connected elements
-        start = time.perf_counter()
         arr = self.mainboard
         to_eliminate = np.zeros((self.size, self.size), dtype=int)
         directions = np.array([[1, 0], [-1, 0], [0, 1], [0, -1]])
@@ -233,19 +228,16 @@ class Board:
                         connected.append(neighbor)
                 head += 1
             score += func(len(connected))
-        end = time.perf_counter()
-        self.times['eliminate'] += end - start
 
         # Eliminate the columns with connected elements
-        columns_eliminated = np.sum(to_eliminate, axis=0)
+        col_eliminated = np.sum(to_eliminate, axis=0)
+        col_remained = self.size - col_eliminated
         for i in range(self.size):
-            if columns_eliminated[i] != 0:
-                col = self.board[:, i][:self.size]
-                self.board[:, i, :] = np.concatenate(
-                        (col[to_eliminate[:, i]==0], self.board[self.size:, i],
-                     np.full((columns_eliminated[i], 2), np.nan)), axis=0)
-        endd = time.perf_counter()
-        self.times['falling'] += endd - end
+            if col_eliminated[i] != 0:
+                col = self.board[:, i]
+                self.board[:col_remained[i], i] = col[:self.size][to_eliminate[:, i] == 0]
+                self.board[col_remained[i]:self.board.shape[0]-col_eliminated[i], i] = col[self.size:]
+                self.board[self.board.shape[0]-col_eliminated[i]:, i] = 'nan'
 
         # Return the total score and the number of columns eliminated
-        return score, columns_eliminated
+        return score, col_eliminated

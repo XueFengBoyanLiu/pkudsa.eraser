@@ -149,7 +149,7 @@ class Best:
         return action_space[np.random.randint(0, len(action_space))]
 
 
-class GreedyRobot:
+class Robot:
     def __init__(self):
         pass
 

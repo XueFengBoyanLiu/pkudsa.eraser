@@ -173,7 +173,6 @@ class Game_play():
             json.dump(self.replay, f, default = serialize_np)
         return
 
-"""
     @property
     def log_data(self):
         '''Return the log data to server'''
@@ -184,7 +183,7 @@ class Game_play():
                 'score': 1000,
                 'reason': None,
                 'order': self.replay['order']}
-        if not self.replay['errorStatus']:
+        if self.replay['errorStatus'] == -1:
             log['score'] = abs(self.score[0] - self.score[1])
             if self.turn < 2 * MAX_TURN:
                 log['reason'] = 'Run out of blocks'
@@ -195,7 +194,6 @@ class Game_play():
             log['errorMessage'] = self.replay['errorMessage'].split('\n')[-2]
             log['reason'] += log['errorMessage']
         return log
-"""
 '''
 class Game_runner():
     def __init__(self, p1, p2):
@@ -221,15 +219,16 @@ if __name__ == '__main__':
     import test_bot
     tp = test_bot.Robot()
     import failed_test_bot as fb
+    import greedy_robot
     bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
             fb.FailedRobot4(), fb.FailedRobot5()]
-    game = Game_play(test_bot, test_bot)
+    game = Game_play(greedy_robot, greedy_robot)
+    game = Game_play(test_bot, test_bot, seed=123)
     import time
     a = time.time()
     game.start_game()
     b = time.time()
     print(b - a)
-    print(game.replay['errorMessage'])
-    print(game.replay['reason'])
+    print(game.log_data)
     print(game.board.times)
     game.save_log('replay.json')

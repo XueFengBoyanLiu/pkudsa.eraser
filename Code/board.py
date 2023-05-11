@@ -1,6 +1,7 @@
 import numpy as np
 import random
 from eraserconfig import *
+import time
 
 class Board:
 
@@ -19,16 +20,17 @@ class Board:
         self.colors = colors
         if seed:
             np.random.seed(seed)
-        self.board = np.concatenate([self.generate_board() for i in np.arange(board_num)])
+        self.board = np.concatenate([self.generate_board() for i in np.arange(board_num)], axis=1)
         self.move_dict = {}
 
         # Use numpy.indices to create a matrix of row/column indices for each cell
-        a = np.indices((self.size * board_num, self.size))
+        a = np.indices((self.size, self.size * board_num))
         # Use numpy.apply_along_axis function to generate unique IDs for cells using row/column indices
-        self.id_matrix = np.apply_along_axis(lambda x: f'r{x[0]:04d}c{x[1]:04d}', 0, a)
+        self.id_matrix = np.apply_along_axis(lambda x: f'r{x[1]:04d}c{x[0]:04d}', 0, a)
 
         # Add ID matrix to the main board
         self.board = np.dstack((self.board, self.id_matrix))
+        self.times = {'get_info':0, 'eliminate':0, 'falling':0}
 
     @property
     def mainboard(self):
@@ -52,23 +54,23 @@ class Board:
         idx = np.arange(len(self.colors))
         np.random.shuffle(idx)
         remain = [1,] * (self.size % len(self.colors)) + [0,] * (len(self.colors) - (self.size % len(self.colors)))
-        a = np.hstack([np.full((self.size, self.size // len(self.colors) + remain[i]),
-            self.colors[idx[i]]) for i in range(len(self.colors))]).reshape(
-            (self.size ** 2, 1))
-        np.random.shuffle(a)  # Shuffle the order of color blocks.
+        new_array = np.concatenate([np.full((self.size, self.size // len(self.colors) + remain[i]),
+            self.colors[idx[i]]) for i in range(len(self.colors))], axis=1)
+        np.random.shuffle(new_array.ravel())  # Shuffle the order of color blocks.
 
-        # Reshape sub-board array using the shuffled colors.
-        new_array = a.reshape(self.size, self.size)
 
         # If there are three adjacent cells with the same color, randomly choose a different color for one of them
-        while self.check(new_array):
-            for i, j in self.check(new_array):
-                new_array[i][j] = new_array[i - random.randint(1, self.size - 1)][j - random.randint(1, self.size - 1)]
+        invalid_pos = self.check(new_array)
+        while invalid_pos:
+            for i, j in invalid_pos:
+                new_array[i, j] = np.random.choice(self.colors)
+            invalid_pos = self.check(new_array)
 
         # Return the generated sub-board.
         return new_array
 
-    def check(self, array):
+    @staticmethod
+    def check(arr):
         '''
         Check if there are three adjacent cells in a sub-board that are filled with the same color.
 
@@ -81,13 +83,11 @@ class Board:
         '''
         repeats = set()
         # Traverse the rows
-        for i in range(0, self.size - 2):
-            for j in range(self.size):
-                if array[i, j] == 'nan':
-                    continue
-                if (array[i+1:i+3, j] == array[i, j]).all():
+        for i in range(0, BOARD_SIZE - 2):
+            for j in range(BOARD_SIZE):
+                if arr[i, j] != 'nan' and (arr[i+1:i+3, j] == arr[i, j]).all():
                     repeats.add((i+1,j))
-                if (array[j, i+1:i+3] == array[j, i]).all():
+                if arr[j, i] != 'nan' and(arr[j, i+1:i+3] == arr[j, i]).all():
                     repeats.add((j,i+1))
 
         return repeats
@@ -108,7 +108,7 @@ class Board:
         Returns:
         np.array: A slice of the mainboard that shows the top part of the current sub-board with a buffer space on top.
         '''
-        return self.board[:self.size + 2, :self.size, :]
+        return self.board[:, :self.size + 2, :].transpose((1, 0, 2))
 
     def get_info(self):
         '''
@@ -119,6 +119,7 @@ class Board:
               information. The second element is a list of all possible operations that can be performed on the
               sub-board to make it valid.
         '''
+        s = time.perf_counter()
         operations = []
         arr = self.mainboard
         arrt = self.mainboard.T
@@ -163,6 +164,8 @@ class Board:
                     operations.append(((j, i), (j, i + 1)))
                     continue
         cb = self.board[:, :, 0].copy()
+        e = time.perf_counter()
+        self.times['get_info'] += e - s
         return [cb, operations]
 
     def change(self, loc1, loc2, *args):
@@ -194,6 +197,7 @@ class Board:
         tuple: A tuple that contains the total score (int) and the number of columns eliminated (array).
         '''
         # Scan the board for connected elements
+        s = time.perf_counter()
         arr = self.mainboard
         to_eliminate = np.zeros((self.size, self.size), dtype=int)
         directions = np.array([[1, 0], [-1, 0], [0, 1], [0, -1]])
@@ -229,15 +233,21 @@ class Board:
                 head += 1
             score += func(len(connected))
 
+        m = time.perf_counter()
+        self.times['eliminate'] += m - s
+
         # Eliminate the columns with connected elements
-        col_eliminated = np.sum(to_eliminate, axis=0)
+        col_eliminated = np.sum(to_eliminate, axis=1)
         col_remained = self.size - col_eliminated
         for i in range(self.size):
-            if col_eliminated[i] != 0:
-                col = self.board[:, i]
-                self.board[:col_remained[i], i] = col[:self.size][to_eliminate[:, i] == 0]
-                self.board[col_remained[i]:self.board.shape[0]-col_eliminated[i], i] = col[self.size:]
-                self.board[self.board.shape[0]-col_eliminated[i]:, i] = 'nan'
+            if col_eliminated[i] == 0:
+                continue
+            col = self.board[i]
+            self.board[i, :col_remained[i]] = col[:self.size][to_eliminate[i] == 0]
+            self.board[i, col_remained[i]:N_ROWS-col_eliminated[i]] = col[self.size:]
+            self.board[i, N_ROWS-col_eliminated[i]:] = np.nan
 
+        e = time.perf_counter()
+        self.times['falling'] += e - m
         # Return the total score and the number of columns eliminated
         return score, col_eliminated

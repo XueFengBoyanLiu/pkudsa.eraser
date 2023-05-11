@@ -1,6 +1,7 @@
 import numpy as np
 import random
 from eraserconfig import *
+import time
 
 class Board:
 
@@ -29,11 +30,12 @@ class Board:
 
         # Add ID matrix to the main board
         self.board = np.dstack((self.board, self.id_matrix))
-                
+        self.times = {'get_info':0, 'eliminate':0, 'falling':0}
+
     @property
     def mainboard(self):
         return self.board[:self.size, :self.size, 0]
-        
+
     def copy(self):
         newboard = self.board.copy()
         copied = Board()
@@ -79,18 +81,16 @@ class Board:
         set: A set of tuples containing row and column indices of all cells that have three adjacent cells with
              the same color.
         '''
-        repeats = []
+        repeats = set()
         # Traverse the rows
         for i in range(0, self.size - 2):
             for j in range(self.size):
+                if array[i, j] == 'nan':
+                    continue
                 if (array[i+1:i+3, j] == array[i, j]).all():
-                    repeats.append([i+1,j])
-
-        # Traverse the columns
-        for i in np.arange(0, self.size - 2):
-            for j in np.arange(self.size):
+                    repeats.add((i+1,j))
                 if (array[j, i+1:i+3] == array[j, i]).all():
-                    repeats.append([j,i+1])
+                    repeats.add((j,i+1))
 
         return repeats
 
@@ -121,27 +121,52 @@ class Board:
               information. The second element is a list of all possible operations that can be performed on the
               sub-board to make it valid.
         '''
+        start = time.perf_counter()
         operations = []
+        arr = self.mainboard
+        arrt = self.mainboard.T
         for i in range(self.size - 1):
-            for j in range(self.size):# i,j; i+1,j
-                a = False if i <= self.size - 4 else (self.mainboard[i, j] == self.mainboard[i+2:i+4, j]).all()
-                b = False if i >= 2 else (self.mainboard[i+1, j] == self.mainboard[i-2:i, j]).all()
-                c = False if j >= 2 else ((self.mainboard[i, j] == self.mainboard[i+1, j-2:j]).all() |
-                                            (self.mainboard[i+1, j] == self.mainboard[i, j-2:j]).all())
-                d = False if j <= self.size - 3 else ((self.mainboard[i, j] == self.mainboard[i+1, j+1:j+3]).all() |
-                                                        (self.mainboard[i+1, j] == self.mainboard[i, j+1:j+3]).all())
-                if np.array([a,b,c,d]).any():
-                    operations.append([(i, j), (i+1, j)])
-        for j in range(self.size - 1):
-            for i in range(self.size):
-                a = False if j <= self.size - 4 else (self.mainboard[i, j] == self.mainboard[i, j+2:j+4]).all()
-                b = False if j >= 2 else (self.mainboard[i, j+1] == self.mainboard[i, j-2:j]).all()
-                c = False if i >= 2 else ((self.mainboard[i, j] == self.mainboard[i-2:i, j+1]).all() |
-                                            (self.mainboard[i, j+1] == self.mainboard[i-2:i, j]).all())
-                d = False if i <= self.size - 3 else ((self.mainboard[i, j] == self.mainboard[i+1:i+3, j+1]).all() |
-                                                        (self.mainboard[i, j+1] == self.mainboard[i+1:i+3, j]).all())
-                if np.array([a,b,c,d]).any():
-                    operations.append([(i, j), (i, j + 1)])
+            for j in range(self.size):
+                if i <= self.size - 4 and (arr[i, j] == arr[i+2:i+4, j]).all():
+                    operations.append(((i, j), (i+1, j)))
+                    continue
+                if i >= 2 and (arr[i+1, j] == arr[i-2:i, j]).all():
+                    operations.append(((i, j), (i+1, j)))
+                    continue
+                if j >= 2 and ((arr[i, j] == arr[i+1, j-2:j]).all() |
+                        (arr[i+1, j] == arr[i, j-2:j]).all()):
+                    operations.append(((i, j), (i+1, j)))
+                    continue
+                if j <= self.size - 3 and ((arr[i, j] == arr[i+1, j+1:j+3]).all() |
+                        (arr[i+1, j] == arr[i, j+1:j+3]).all()):
+                    operations.append(((i, j), (i+1, j)))
+                    continue
+                if j >= 1 and j <= self.size - 2 and ((arr[i, j] == arr[i+1, [j-1, j+1]]).all() |
+                        (arr[i+1, j] == arr[i, [j-1, j+1]]).all()):
+                    operations.append(((i, j), (i+1, j)))
+                    continue
+        for i in range(self.size - 1):
+            for j in range(self.size):
+                if i <= self.size - 4 and (arrt[i, j] == arrt[i+2:i+4, j]).all():
+                    operations.append(((j, i), (j, i + 1)))
+                    continue
+                if i >= 2 and (arrt[i+1, j] == arrt[i-2:i, j]).all():
+                    operations.append(((j, i), (j, i + 1)))
+                    continue
+                if j >= 2 and ((arrt[i, j] == arrt[i+1, j-2:j]).all() |
+                        (arrt[i+1, j] == arrt[i, j-2:j]).all()):
+                    operations.append(((j, i), (j, i + 1)))
+                    continue
+                if j <= self.size - 3 and ((arrt[i, j] == arrt[i+1, j+1:j+3]).all() |
+                        (arrt[i+1, j] == arrt[i, j+1:j+3]).all()):
+                    operations.append(((j, i), (j, i + 1)))
+                    continue
+                if j >= 1 and j <= self.size - 2 and ((arrt[i, j] == arrt[i+1, [j-1, j+1]]).all() |
+                        (arrt[i+1, j] == arrt[i, [j-1, j+1]]).all()):
+                    operations.append(((j, i), (j, i + 1)))
+                    continue
+        end = time.perf_counter()
+        self.times['get_info'] += end - start
         return [self.board[:, :, 0], operations]
 
     def change(self, loc1, loc2, *args):
@@ -173,21 +198,23 @@ class Board:
         tuple: A tuple that contains the total score (int) and the number of columns eliminated (array).
         '''
         # Scan the board for connected elements
+        start = time.perf_counter()
         arr = self.mainboard
         to_eliminate = np.zeros((self.size, self.size), dtype=int)
         directions = np.array([[1, 0], [-1, 0], [0, 1], [0, -1]])
-        to_visit = []
+        to_visit = self.check(arr)
         score = 0
 
+        '''
         for i in range(self.size):
             for j in range(self.size):
                 if arr[i, j] == 'nan':
                     continue
                 if i <= self.size - 3 and (arr[i+1:i+3, j] == arr[i, j]).all():
-                    to_visit.append([i, j])
+                    to_visit.append([i+1, j])
                 if j <= self.size - 3 and (arr[i, j+1:j+3] == arr[i, j]).all():
-                    to_visit.append([i, j])
-
+                    to_visit.append([i, j+1])
+        '''
         # Check if it belongs to connected elements
         for coord in to_visit:
             if to_eliminate[coord[0], coord[1]] == 1:
@@ -206,8 +233,8 @@ class Board:
                         connected.append(neighbor)
                 head += 1
             score += func(len(connected))
-
-        # Calculate the total score
+        end = time.perf_counter()
+        self.times['eliminate'] += end - start
 
         # Eliminate the columns with connected elements
         columns_eliminated = np.sum(to_eliminate, axis=0)
@@ -217,6 +244,8 @@ class Board:
                 self.board[:, i, :] = np.concatenate(
                         (col[to_eliminate[:, i]==0], self.board[self.size:, i],
                      np.full((columns_eliminated[i], 2), np.nan)), axis=0)
+        endd = time.perf_counter()
+        self.times['falling'] += endd - end
 
         # Return the total score and the number of columns eliminated
         return score, columns_eliminated

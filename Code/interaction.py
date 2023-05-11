@@ -231,4 +231,5 @@ if __name__ == '__main__':
     print(b - a)
     print(game.replay['errorMessage'])
     print(game.replay['reason'])
+    print(game.board.times)
     game.save_log('replay.json')

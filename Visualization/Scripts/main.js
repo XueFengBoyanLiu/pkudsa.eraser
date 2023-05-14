@@ -1,5 +1,5 @@
 // Global variables
-const size=8;
+const size=6;
 const preview=2;
 
 const unitTime=400;

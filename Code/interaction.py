@@ -18,23 +18,23 @@ def serialize_np(obj):
     raise TypeError ("Type %s is not serializable" % type(obj))
 
 class Game_play():
-    def __init__(self, player_1, player_2, board=None, order=0):
+    def __init__(self, player_1, player_2, board=None, order=0, seed=None):
         '''
         Parameters
         ----------
-        player_1, player_2: imported from player's code
+        player_1, player_2: the player's code
         '''
-        self.players = (Player_safe(player_1), Player_safe(player_2))
+        self.players = (Player_safe(player_1.Robot()), Player_safe(player_2.Robot()))
         self.terminated = False
         # the players are wrapped by exception_manager.py
-        self.board = Board() if board is None else board
+        self.board = Board(seed=seed) if board is None else board
         self.remained_blocks = np.full(BOARD_SIZE, N_ROWS - BOARD_SIZE - 2)
 
         self.turn = 0
         self.replay = {'totalFrames': 0,
                 'totalRemains': (N_ROWS - BOARD_SIZE - 2),
                 'scores': {},
-                'exitStatus': 0,
+                'errorStatus': -1,
                 'errorMessage': '',
                 'winner': -1,
                 'frames': [],
@@ -72,7 +72,7 @@ class Game_play():
         if self.turn >= MAX_TURN * 2:
             self.terminated = True
             return
-        if (self.board.peek_board()[:BOARD_SIZE, :BOARD_SIZE] == 'nan').any():
+        if (self.board.mainboard == 'nan').any():
             self.terminated = True
 
         # update turn data
@@ -88,7 +88,7 @@ class Game_play():
         if current_player.error is not None:
             self.terminated = True
             self.replay['winner'] = 1 - side
-            self.replay['exitStatus'] = 1
+            self.replay['errorStatus'] = side
             self.replay['errorMessage'] = current_player.error
             return
 
@@ -98,7 +98,7 @@ class Game_play():
         # eliminating blocks
         while True:
             pts, columns_eliminated = self.board.eliminate()
-            if columns_eliminated.sum() == 0:
+            if pts == 0:
                 break
             self.remained_blocks = self.remained_blocks - columns_eliminated
             self.score[side] += pts
@@ -114,8 +114,6 @@ class Game_play():
         Given current board, get a move from the current player
         Returns: ((x1, y1), (x2, y2))
         '''
-        #if self.board.get_info()[1] == []:
-            #print('no moves available')
         return player('move', *self.board.get_info())
 
     def record_frame(self):
@@ -145,12 +143,11 @@ class Game_play():
         while not self.terminated:
             self.perform_turn()
         self.end_game()
+        return self.replay
 
     def end_game(self):
         '''End the game and format the replay as .json file'''
-        self.terminated = True
-
-        if not self.replay['exitStatus']:
+        if self.replay['errorStatus'] == -1:
             self.replay['winner'] = np.argmax(self.score)
 
         history = np.vstack(self.scores_history)
@@ -158,8 +155,17 @@ class Game_play():
                                 'right': history[:, 1],
                                 'relative': history[:, 0] - history[:, 1]}
         self.replay['length'] = self.turn
-        self.replay['reason'] = self.log_data['reason']
-        self.replay['extra'] = self.log_data['score']
+
+        if self.replay['errorStatus'] == -1:
+            self.replay['extra'] = abs(self.score[0] - self.score[1])
+            if self.turn < 2 * MAX_TURN:
+                self.replay['reason'] = 'Run out of blocks'
+            else:
+                self.replay['reason'] = 'Reach turn limit'
+        else:
+            self.replay['extra'] = 1000
+            self.replay['reason'] = 'An error occurred: '
+            self.replay['reason'] += self.replay['errorMessage'].split('\n')[-2]
         print('Game ends')
 
     def save_log(self, path):
@@ -172,12 +178,12 @@ class Game_play():
         '''Return the log data to server'''
         log = {'winner': self.replay['winner'],
                 'errorMessage': '',
-                'errorStatus': self.replay['exitStatus'] - 1,
+                'errorStatus': self.replay['errorStatus'] - 1,
                 'length': self.turn,
                 'score': 1000,
                 'reason': None,
                 'order': self.replay['order']}
-        if not self.replay['exitStatus']:
+        if self.replay['errorStatus'] == -1:
             log['score'] = abs(self.score[0] - self.score[1])
             if self.turn < 2 * MAX_TURN:
                 log['reason'] = 'Run out of blocks'
@@ -188,7 +194,7 @@ class Game_play():
             log['errorMessage'] = self.replay['errorMessage'].split('\n')[-2]
             log['reason'] += log['errorMessage']
         return log
-
+'''
 class Game_runner():
     def __init__(self, p1, p2):
         self.board1 = Board()
@@ -208,13 +214,21 @@ class Game_runner():
     def save_game_log(self, path1, path2):
         self.game1.save_log(path1)
         self.game2.save_log(path2)
-
+'''
 if __name__ == '__main__':
     import test_bot
     tp = test_bot.Robot()
     import failed_test_bot as fb
+    import greedy_robot
     bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
             fb.FailedRobot4(), fb.FailedRobot5()]
-    game = Game_runner(tp, bots[3])
-    print(game.start_games())
-    game.save_game_log('r1.json', 'r2.json')
+    game = Game_play(greedy_robot, greedy_robot)
+    game = Game_play(test_bot, test_bot, seed=123)
+    import time
+    a = time.time()
+    game.start_game()
+    b = time.time()
+    print(b - a)
+    print(game.log_data)
+    print(game.board.times)
+    game.save_log('replay.json')

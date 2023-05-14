@@ -5,7 +5,6 @@ from exception_manager import *
 from eraserconfig import *
 
 import threading
-import time
 import traceback
 import numpy as np
 import json
@@ -81,7 +80,8 @@ class Game_play():
         current_player = self.players[side]
         self.scores_history.append(self.score.copy())
         self.current_combo[side] = 0
-        print(f'perform turn {self.turn}, current player {side}')
+        if self.turn % 100 == 0:
+            print(f'perform turn {self.turn}, current player {side}')
 
         # make a move for the current player
         mv = self.ask_for_move(current_player)
@@ -103,7 +103,6 @@ class Game_play():
             self.remained_blocks = self.remained_blocks - columns_eliminated
             self.score[side] += pts
             self.current_combo[side] += columns_eliminated.sum()
-            #print(self.current_combo)
             self.high_combo[side] = max(self.high_combo[side],
                     self.current_combo[side])
 
@@ -153,7 +152,7 @@ class Game_play():
         history = np.vstack(self.scores_history)
         self.replay['scores'] = {'left': history[:, 0],
                                 'right': history[:, 1],
-                                'relative': history[:, 0] - history[:, 1]}
+                                'relative': history[:, 1] - history[:, 0]}
         self.replay['length'] = self.turn
 
         if self.replay['errorStatus'] == -1:
@@ -178,7 +177,7 @@ class Game_play():
         '''Return the log data to server'''
         log = {'winner': self.replay['winner'],
                 'errorMessage': '',
-                'errorStatus': self.replay['errorStatus'] - 1,
+                'errorStatus': self.replay['errorStatus'],
                 'length': self.turn,
                 'score': 1000,
                 'reason': None,
@@ -194,27 +193,7 @@ class Game_play():
             log['errorMessage'] = self.replay['errorMessage'].split('\n')[-2]
             log['reason'] += log['errorMessage']
         return log
-'''
-class Game_runner():
-    def __init__(self, p1, p2):
-        self.board1 = Board()
-        self.board2 = self.board1.copy()
-        self.p1 = p1
-        self.p2 = p2
 
-    def start_games(self):
-        self.game1 = Game_play(self.p1, self.p2, board=self.board1, order=0)
-        self.game1.start_game()
-        self.game2 = Game_play(self.p2, self.p1, board=self.board2, order=1)
-        self.game2.start_game()
-        log1, log2 = self.game1.log_data, self.game2.log_data
-        log2['winner'] = 1 - log2['winner']
-        return log1, log2
-
-    def save_game_log(self, path1, path2):
-        self.game1.save_log(path1)
-        self.game2.save_log(path2)
-'''
 if __name__ == '__main__':
     import test_bot
     tp = test_bot.Robot()
@@ -223,12 +202,11 @@ if __name__ == '__main__':
     bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
             fb.FailedRobot4(), fb.FailedRobot5()]
     game = Game_play(greedy_robot, greedy_robot)
-    game = Game_play(test_bot, test_bot, seed=123)
+    #game = Game_play(test_bot, test_bot)
     import time
     a = time.time()
     game.start_game()
     b = time.time()
     print(b - a)
     print(game.log_data)
-    print(game.board.times)
     game.save_log('replay.json')

@@ -10,7 +10,7 @@ A、B双方每场比赛分为20局，每两局使用**同一组**棋盘数据，
 ***
 ## 二 游戏规则与运行机制
 ### 2.1 棋子描述与棋盘结构
-每个回合双方面对同个二维棋盘，每个棋盘有8列，n行。每个格子摆放一个棋子，棋子分为四色。最下方的8行组成的 $8\times 8$ 棋盘为主棋盘，棋盘其余部分为储备棋盘。如下图所示:  
+每个回合双方面对同个二维棋盘，每个棋盘有6列，1200行。每个格子摆放一个棋子，棋子分为五色。最下方的6行组成的 $6\times 6$ 棋盘为主棋盘，棋盘其余部分为储备棋盘。如下图所示:  
 
 <img src="配图/example.png" style="zoom:50%;" />  
 
@@ -31,15 +31,15 @@ A、B双方每场比赛分为20局，每两局使用**同一组**棋盘数据，
   
 ### 2.3 消除过程与单回合分数计算
 棋子有效同色连通区域可以发生消除。有效同色连通区域即，主棋盘上同色棋子相连形成的区域，要求同一方向上（水平或垂直）存在三个及以上同色棋子。下图显示了主棋盘上的棋子可进行消除的情况，即棋子有效同色连通区域的可能形状。  
-<img src="配图/1.png" style="zoom:25%;" /> <img src="配图/2.png" style="zoom:25%;" />  
+<img src="配图/1.png" style="zoom:30%;" /> <img src="配图/2.png" style="zoom:25%;" />  
 
-<img src="配图/4.png" style="zoom:25%;" /> <img src="配图/5.png" style="zoom:25%;" />  
+<img src="配图/4.png" style="zoom:30%;" /> <img src="配图/5.png" style="zoom:25%;" />  
 
-<img src="配图/6.png" style="zoom:25%;" /> <img src="配图/7.png" style="zoom:25%;" />   
+<img src="配图/6.png" style="zoom:30%;" /> <img src="配图/7.png" style="zoom:30%;" />   
 
 上面的实例展示了部分具有代表性的有效同色连通区域情况，下面将展示一些非有效同色连通区域的例子：  
 
-<img src="配图/yx1.png" style="zoom:25%;" />  <img src="配图/yx2.png" style="zoom:25%;" />  <img src="配图/yx3.png" style="zoom:25%;" />  
+<img src="配图/yx1.png" style="zoom:30%;" />  <img src="配图/yx2.png" style="zoom:30%;" />  <img src="配图/yx3.png" style="zoom:30%;" />  
 
 这些非有效同色连通区域的共性是，虽然有三个及以上多个同色棋子相连，但是**在同一个方向上**不存在至少三个棋子相连。
 
@@ -59,20 +59,20 @@ A、B双方每场比赛分为20局，每两局使用**同一组**棋盘数据，
 下图展示了一个循环实例：  
 - 计分  
 
-<img src="配图/step1.png" style="zoom:25%;" />  
+<img src="配图/step1.png" style="zoom:30%;" />  
 
 红色框勾出了主棋盘所有可以进行消除的有效同色连通区域，请注意，灰色框勾出的连通区域属于储备棋盘，不发生消除。有效同色连通区域（1个）共包含5个棋子，得分为 $（5-2）^2=9$分。结算毕。 
 
 - 移除  
 
-<img src="配图/step2.png" style="zoom:25%;" />   
+<img src="配图/step2.png" style="zoom:30%;" />   
 
 移除棋子。  
 
 - 掉落   
  
 
-<img src="配图/step2.5.png" style="zoom:25%;" />   <img src="配图/step3.png" style="zoom:25%;" />   
+<img src="配图/step2.5.png" style="zoom:30%;" />   <img src="配图/step3.png" style="zoom:30%;" />   
 
 棋子顺**列**重力下落。
 - 计分

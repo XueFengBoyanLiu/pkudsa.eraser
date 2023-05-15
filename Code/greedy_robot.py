@@ -1,6 +1,6 @@
 import numpy as np
+from eraserconfig import *
 
-BOARD_SIZE = 6
 action_space = [((i, j), (i, j + 1)) for i in range(BOARD_SIZE) for j in range(BOARD_SIZE - 1)] + \
                [((i + 1, j), (i, j)) for i in range(BOARD_SIZE - 1) for j in range(BOARD_SIZE)]
 
@@ -14,7 +14,7 @@ class MyBoard:
         board_num(int): Number of sub-boards in the main board
         colors(np.array): Array of available colors
         '''
-        self.size = board.shape[1]
+        self.size = board.shape[0]
         self.board = board
 
     def change(self, loc1, loc2):
@@ -33,90 +33,93 @@ class MyBoard:
         temp2 = self.board[x2, y2].copy()
         self.board[x1, y1], self.board[x2, y2] = temp2, temp1
 
-    def scan_for_connected(self):
+    @staticmethod
+    def check(arr):
         '''
-        Scan the mainboard for connected elements.
-        Returns:
-        list: A list of connected elements groups. Each group consists of elements with the same color that are
-              connected in a row or column and has three or more elements.
-        '''
-        matrix = self.board[:, :]
-        visited = set()
-        res = []
-        for i in range(self.size):
-            for j in range(self.size):
-                if (i, j) not in visited:
-                    visited.add((i, j))
-                    temp = []
-                    queue = [(i, j)]
-                    while queue:
-                        x, y = queue.pop(0)
-                        temp.append((x, y))
-                        if x + 1 < self.size and (x + 1, y) not in visited and matrix[x + 1][y] == matrix[x][y]:
-                            queue.append((x + 1, y))
-                            visited.add((x + 1, y))
-                        if x - 1 >= 0 and (x - 1, y) not in visited and matrix[x - 1][y] == matrix[x][y]:
-                            queue.append((x - 1, y))
-                            visited.add((x - 1, y))
-                        if y + 1 < self.size and (x, y + 1) not in visited and matrix[x][y + 1] == matrix[x][y]:
-                            queue.append((x, y + 1))
-                            visited.add((x, y + 1))
-                        if y - 1 >= 0 and (x, y - 1) not in visited and matrix[x][y - 1] == matrix[x][y]:
-                            queue.append((x, y - 1))
-                            visited.add((x, y - 1))
-                    res.append(temp)
-        # Iterate through every element on the mainboard and perform a breadth-first search for connected elements.
-        # Store each group of connected elements in the res list.
-        list_of_connected_elements = []
-        for sublst in res:
-            lx=sorted(sorted(sublst, key=lambda x: x[1]), key=lambda x: x[0])
-            ly=sorted(sorted(sublst, key=lambda x: x[0]), key=lambda x: x[1])
-            for i in range(len(sublst)-2):
-                if sublst not in list_of_connected_elements and lx[i][0]==lx[i+1][0]==lx[i+2][0] and lx[i][1]+2==lx[i+1][1]+1==lx[i+2][1]:
-                    list_of_connected_elements.append(sublst)
-                    break
-            for j in range(len(sublst)-2):
-                if sublst not in list_of_connected_elements and ly[j][1]==ly[j+1][1]==ly[j+2][1] and ly[j][0]+2==ly[j+1][0]+1==ly[j+2][0]:
-                    list_of_connected_elements.append(sublst)
-                    break
-        # Filter out groups that have three or more connected elements in a row or column and return the list.
-        return list_of_connected_elements
+        Check if there are three adjacent cells in a sub-board that are filled with the same color.
 
-    def eliminate(self, func=lambda x: (len(x) - 2) ** 2):
+        Parameters:
+        array(np.array): A square sub-board array to be checked for repetition of colors.
+
+        Returns:
+        set: A set of tuples containing row and column indices of all cells that have three adjacent cells with
+             the same color.
+        '''
+        repeats = set()
+        # Traverse the rows
+        for i in range(0, BOARD_SIZE - 2):
+            for j in range(BOARD_SIZE):
+                if arr[i, j] != 'nan' and (arr[i+1:i+3, j] == arr[i, j]).all():
+                    repeats.add((i+1,j))
+                if arr[j, i] != 'nan' and(arr[j, i+1:i+3] == arr[j, i]).all():
+                    repeats.add((j,i+1))
+
+        return repeats
+
+    def eliminate(self, func=lambda x: (x - 2) ** 2):
         '''
         Eliminates connected elements from the mainboard and calculates the score.
+
         Args:
         func (function): A function that takes in a group of connected elements and returns a score.
+
         Returns:
         tuple: A tuple that contains the total score (int) and the number of columns eliminated (array).
         '''
         # Scan the board for connected elements
-        list_of_connected_elements = self.scan_for_connected()
+        arr = self.mainboard
+        to_eliminate = np.zeros((self.size, self.size), dtype=int)
+        directions = np.array([[1, 0], [-1, 0], [0, 1], [0, -1]])
+        to_visit = self.check(arr)
+        score = 0
 
-        # Calculate the score for each connected element
-        scorelist = list(map(func, list_of_connected_elements))
+        '''
+        for i in range(self.size):
+            for j in range(self.size):
+                if arr[i, j] == 'nan':
+                    continue
+                if i <= self.size - 3 and (arr[i+1:i+3, j] == arr[i, j]).all():
+                    to_visit.append([i+1, j])
+                if j <= self.size - 3 and (arr[i, j+1:j+3] == arr[i, j]).all():
+                    to_visit.append([i, j+1])
+        '''
+        # Check if it belongs to connected elements
+        for coord in to_visit:
+            if to_eliminate[coord[0], coord[1]] == 1:
+                continue
+            head = 0
+            connected = [coord, ]
+            while head < len(connected):
+                current = connected[head]
+                to_eliminate[current[0], current[1]] = 1
+                for d in directions:
+                    neighbor = current + d
+                    if (neighbor < 0).any() or (neighbor >= self.size).any():
+                        continue
+                    if (arr[neighbor[0], neighbor[1]] == arr[current[0], current[1]]
+                        and to_eliminate[neighbor[0], neighbor[1]] == 0):
+                        connected.append(neighbor)
+                head += 1
+            score += func(len(connected))
 
-        # Calculate the total score
-        score = sum(scorelist)
-
-        # Mark the connected elements as changed
-        changed = np.zeros((self.size, self.size), bool)
-        for sublst in list_of_connected_elements:
-            for cordinates in sublst:
-                changed[cordinates] = True
 
         # Eliminate the columns with connected elements
-        columns_eliminated = np.sum(changed, axis=0)
+        col_eliminated = np.sum(to_eliminate, axis=1)
+        col_remained = self.size - col_eliminated
         for i in range(self.size):
-            col = self.board[0:self.size, i]
-            indices = np.where(changed[:, i] == False)[0]
-            if len(indices) != self.size:
-                self.board[:, i] = np.concatenate(
-                    (col[indices], self.board[self.size:, i],
-                     np.full((columns_eliminated[i],), np.nan)), axis=0)
+            if col_eliminated[i] == 0:
+                continue
+            col = self.board[i]
+            self.board[i, :col_remained[i]] = col[:self.size][to_eliminate[i] == 0]
+            self.board[i, col_remained[i]:N_ROWS-col_eliminated[i]] = col[self.size:]
+            self.board[i, N_ROWS-col_eliminated[i]:] = np.nan
 
         # Return the total score and the number of columns eliminated
-        return score, columns_eliminated
+        return score, col_eliminated
+
+    @property
+    def mainboard(self):
+        return self.board[:self.size, :self.size]
 
 
 # 贪心策略
@@ -130,7 +133,8 @@ class Best:
         new_board = MyBoard(self.board.board.copy())
         new_board.change((x1, y1), (x2, y2))
         total_score, columns_eliminated = new_board.eliminate()
-        while columns_eliminated.sum() != 0 and not (new_board.board[:BOARD_SIZE, :BOARD_SIZE] == 'nan').any():
+        score = total_score
+        while score != 0 and not (new_board.board[:BOARD_SIZE, :BOARD_SIZE] == 'nan').any():
             score, columns_eliminated = new_board.eliminate()
             total_score += score
         return new_board, total_score

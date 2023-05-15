@@ -5,7 +5,7 @@ import time
 
 class Board:
 
-    def __init__(self, size=BOARD_SIZE, board_num=N_ROWS // BOARD_SIZE,
+    def __init__(self, board_num=N_ROWS // BOARD_SIZE,
                  colors=np.array(list(COLORS.keys())), seed=None):
         '''
         Initialize board instance.
@@ -15,7 +15,7 @@ class Board:
         board_num(int): Number of sub-boards in the main board
         colors(np.array): Array of available colors
         '''
-        self.size = size
+        self.size = BOARD_SIZE
         self.board_num = board_num
         self.colors = colors
         if seed:
@@ -30,7 +30,7 @@ class Board:
 
         # Add ID matrix to the main board
         self.board = np.dstack((self.board, self.id_matrix))
-        self.times = {'get_info':0, 'eliminate':0, 'falling':0}
+        self.times = {'get_info':0, 'eliminate':0, 'falling':0, 'check':0}
 
     @property
     def mainboard(self):
@@ -119,7 +119,6 @@ class Board:
               information. The second element is a list of all possible operations that can be performed on the
               sub-board to make it valid.
         '''
-        s = time.perf_counter()
         operations = []
         arr = self.mainboard
         arrt = self.mainboard.T
@@ -164,8 +163,6 @@ class Board:
                     operations.append(((j, i), (j, i + 1)))
                     continue
         cb = self.board[:, :, 0].copy()
-        e = time.perf_counter()
-        self.times['get_info'] += e - s
         return [cb, operations]
 
     def change(self, loc1, loc2, *args):
@@ -197,23 +194,12 @@ class Board:
         tuple: A tuple that contains the total score (int) and the number of columns eliminated (array).
         '''
         # Scan the board for connected elements
-        s = time.perf_counter()
         arr = self.mainboard
         to_eliminate = np.zeros((self.size, self.size), dtype=int)
         directions = np.array([[1, 0], [-1, 0], [0, 1], [0, -1]])
         to_visit = self.check(arr)
         score = 0
 
-        '''
-        for i in range(self.size):
-            for j in range(self.size):
-                if arr[i, j] == 'nan':
-                    continue
-                if i <= self.size - 3 and (arr[i+1:i+3, j] == arr[i, j]).all():
-                    to_visit.append([i+1, j])
-                if j <= self.size - 3 and (arr[i, j+1:j+3] == arr[i, j]).all():
-                    to_visit.append([i, j+1])
-        '''
         # Check if it belongs to connected elements
         for coord in to_visit:
             if to_eliminate[coord[0], coord[1]] == 1:
@@ -233,9 +219,6 @@ class Board:
                 head += 1
             score += func(len(connected))
 
-        m = time.perf_counter()
-        self.times['eliminate'] += m - s
-
         # Eliminate the columns with connected elements
         col_eliminated = np.sum(to_eliminate, axis=1)
         col_remained = self.size - col_eliminated
@@ -245,9 +228,7 @@ class Board:
             col = self.board[i]
             self.board[i, :col_remained[i]] = col[:self.size][to_eliminate[i] == 0]
             self.board[i, col_remained[i]:N_ROWS-col_eliminated[i]] = col[self.size:]
-            self.board[i, N_ROWS-col_eliminated[i]:] = np.nan
+            self.board[i, N_ROWS-col_eliminated[i]:] = 'nan'
 
-        e = time.perf_counter()
-        self.times['falling'] += e - m
         # Return the total score and the number of columns eliminated
         return score, col_eliminated

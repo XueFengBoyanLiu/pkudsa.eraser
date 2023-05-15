@@ -110,7 +110,7 @@ $$
 - 当前棋盘 `board`（一个存储字符串的二维列表）：`board[x][y]` 表示自左向右第 `x` 列，自下向上第 `y` 行的棋子颜色，例如 `"R"`, `"G"` 等，若当前格子 `board[x][y]` 不存在棋子，则 `board[x][y]=="nan"`。
 - 可导致消除的操作列表 `operations`（一个二维列表）: `operations[i]` 是一个形如 `((x1, y1), (x2, y2)）` 的元组，表示一对交换后可以导致消除的相邻棋子。`(x1, y1)` 表示坐标为 $(x_1, y_1)$ 的棋子。
 - 双方分数 `scores` (列表)，`scores[0]` 为本队分数，`scores[1]` 为对手分数。
-- 当前回合数 `turn_number` （整数）。
+- 当前回合数 `turn_number` （整数）：指属于己方的1-100操作回合。
 ***
 ## 四 玩家提交文件要求
 玩家需要编写并提交一个python文件，其中应包含 `Plaser` 类（Plaser=Player+Eraser）。 `Plaser` 类中至少要实现成员方法 `move(self, board, operations, scores, turn_number)` 与初始化方法 `__init__(self)` 。

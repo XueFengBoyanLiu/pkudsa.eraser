@@ -1,6 +1,6 @@
 # 数据结构与算法B 2023春季大作业 Eraser
 
-**游戏规则及赛程安排在[这里](https://github.com/XueFengBoyanLiu/pkudsa.eraser/blob/main/Documents/eraser1.md)**
+**游戏规则及赛程安排在[这里](https://github.com/XueFengBoyanLiu/pkudsa.eraser/blob/main/Documentation/eraser1.md)**
 
 ---
 

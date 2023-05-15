@@ -60,7 +60,8 @@ class Player_safe:
             thread.join(MAX_TIME)
             if isinstance(result.state, Exception):
                 raise result.state
-            if result.state >= MAX_TIME:
+            self.time += result.state
+            if self.time >= MAX_TIME:
                 raise Timeout()
             if funcname == 'move':
                 self.check_for_invalid_move(result.result)

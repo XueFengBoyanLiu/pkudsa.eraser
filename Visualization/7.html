@@ -7,11 +7,17 @@
 {% block css %}
 {{ block.super }}
 <style>
+.container{
+  margin: 0, 30px!important;
+}
+
+
 /* Global variables */
 html{
-  --size: 8;
+  --size: 6;
   --preview: 2;
   --PLAYING_SPEED: 1;
+  --unit-time:0.4s;
 }
 #left-sidebar{
   --teamcolor: rgb(5, 5, 153);
@@ -61,7 +67,38 @@ html{
 }
 /* Animations */
 /* Animation for a piece to be eliminated */
+/* @keyframes eliminate{
+  0%{
+    transform: scale(1);
+  }
+  50%{
+    transform: scale(1.5);
+  }
+  50%{
+    transform: scale(0.2);
+  }
+  100%{
+    transform: scale(0);
+  }
+} */
 @keyframes eliminate{
+  0%{
+    filter: contrast(300%);
+    transform: scale(1);
+  }
+  40%{
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  /* 50%{
+    transform: scale(0.2);
+  } */
+  100%{
+    transform: scale(0.8);
+    opacity: 0.4;
+  }
+}
+@keyframes appearing{
   0%{
     transform: scale(1);
   }
@@ -76,6 +113,8 @@ html{
   }
 }
 
+
+/* 
 .eliminated{
   animation: eliminate 0.3s ease-in;
   animation-fill-mode: forwards;
@@ -83,10 +122,19 @@ html{
 .appearing{
   animation: eliminate 0.3s ease-out reverse;
   animation-fill-mode: backwards;
+} */
+
+.eliminated{
+  animation: eliminate calc(var(--unit-time) / var(--PLAYING_SPEED)) ease-in;
+  animation-fill-mode: forwards;
+}
+.appearing{
+  animation: appearing calc(var(--unit-time) / var(--PLAYING_SPEED)) ease-out reverse;
+  animation-fill-mode: backwards;
 }
 
 /* General Styles */
-body{
+#custom-container{
   font-family: Arial, sans-serif;
   display:grid;
   grid-template-columns: 1fr 4fr;
@@ -259,7 +307,7 @@ body{
   }
     .sidebar .status .text-of-status{
     font-size:2em;
-
+    
   }
   .sidebar .sidebar-header{
     /*margin-top:2.5em;*/
@@ -344,7 +392,7 @@ body{
 
   border-radius: 12px;
   background-color: rgb(0, 0, 43);
-  background: url(../photos/beautifulBlue.jpg) no-repeat center center/ cover;
+  /* background: url(../photos/beautifulBlue.jpg) no-repeat center center/ cover; */
   /* background: url(../photos/wallpaper.webp) no-repeat center center/ cover; */
 }
 /* File chooser */
@@ -367,13 +415,6 @@ body{
   font-size: calc(var(--font-size) * 1.02);
 }
 
-#chartl,#chartr {
-  background-color: rgba(255, 255, 255, 0.6);
-}
-
-#chartr {
-  margin-top: 52px;
-}
 
 
 
@@ -409,28 +450,30 @@ body{
 
 {% block descriptions %}
 <div class='row x_block'>
-    <div class='col-sm-1' id='d_round'>回合</div>
+    <div class='col-sm-1' id='d_round'></div>
     <!-- <div class='col-sm-4' id='d_action'>动作</div>
     <div class='col-sm-1' id='d_score'>得分</div> -->
     <div class='col-sm-6' id='widget_group'>
-        <div id="select-bar">
-            <div class="custom-select">
-              <select name="scores-mode" id="scores-mode">
-                  <option value="difference">分 差</option>
-                  <option value="raw">总得分</option>
-              </select>
-            </div>
-          </div>
     </div>
 </div>
-<div id="chart"></div>
 {% endblock %}
 
 
 {% block display_body %}
-<div id="side-display">
+<div id="custom-container">
+
+<div id="side-display" style="margin-left: 10px; z-index: 100;margin-right:-50px">
+  
     <div id="scores-graph-section">
-      <div id="chart" style="width:200px;height: 80vh;"></div>
+      <div id="select-bar" style="padding-bottom: 10px">
+        <div class="custom-select">
+          <select name="scores-mode" id="scores-mode">
+              <option value="difference">分 差</option>
+              <option value="raw">总得分</option>
+          </select>
+        </div>
+      </div>
+      <div id="chart" style="width:280px;height: 80vh;z-index: 10"></div>
     </div>
   </div>
 
@@ -487,6 +530,7 @@ body{
     </div>
 
   </div>
+</div>
 {% endblock %}
 
 {% block script %}
@@ -494,8 +538,10 @@ body{
 {{ block.super }}
 <script>
 // Global variables
-const size=8;
+const size=6;
 const preview=2;
+
+const unitTime=400;
 
 const width=400;
 const unitSize=width/size;
@@ -517,20 +563,21 @@ const currentBoard={};
 
 const player={0:'left',1:'right'}
 // Green Blue Orange Pink Colors
-const colorArray=['transparent',"rgb(13, 211, 82)","rgb(22, 218, 224)","rgb(224, 134, 60)","rgb(243, 121, 137)"];
+const colorArray=["rgb(13, 211, 82)","rgb(22, 218, 224)","rgb(224, 134, 60)","rgb(243, 121, 137)","rgb(244, 67, 54)","rgb(255, 193, 7)","rgb(96, 125, 139)","rgb(0, 188, 212)","rgb(103, 58, 183)","rgb(233, 30, 99)","rgb(255, 152, 0)","rgb(3, 169, 244)"];
+let colorShift=5;
 
 
 // 烦人的接口!
 PLAYING_SPEED = 1;
 PLAYING_FPS = 1.25;
-record=record_obj;
+const record=record_obj;
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 // Define the initialization function
 let totalRemains,totalFrames,scores,exitStatus,errorMessage,winner,frames;
-init=function(record){
+init=function(){
   // Global variables
   totalFrames=record.totalFrames;
   scores=record.scores;
@@ -548,9 +595,9 @@ init=function(record){
 }
 // Define a function to draw a frame
 
-function draw_frame(idx) {
+function draw_frame() {
   // Global variables
-  const {turnNumber,currentPlayer,remainedBarStatus,boardStatus,sideBarStatus}=frames[idx];
+  const {turnNumber,currentPlayer,remainedBarStatus,boardStatus,sideBarStatus}=frames[CURR_FRAME];
 
   document.documentElement.style.setProperty('--PLAYING_SPEED', PLAYING_SPEED);
 
@@ -567,7 +614,10 @@ function draw_frame(idx) {
 const remainedBar=document.getElementsByClassName("remained-bar");
 updateRemainedBar=function (remainedBarStatus) {
   for (i=0;i<remainedBarStatus.length;i++) {
-    remainedBar[i].style.height=`${remainedBarStatus[i] / totalRemains * remainedBarHeight}px`;
+    console.log(remainedBarStatus[i])
+    // if (remainedBarStatus[i]){
+    //   remainedBar[i].style.height=`${remainedBarStatus[i] / totalRemains * remainedBarHeight}px`;
+    // }
   }
 }
 // Define a function to update the sidebars
@@ -593,9 +643,9 @@ updateSideBar=function (sideBarStatus) {
 // Define a function to update the board
   // Define a function to get the color of a piece
   getColor=function(pieceId){
-    return colorArray[pieceId.slice(-1)];
+    return colorArray[colorShift+parseInt(pieceId.slice(-1))];
   }
-updateBoard=function(boardStatus,team='unknown'){
+  updateBoard=function(boardStatus,team='unknown'){
   for (let pieceId in currentBoard){
     if (!(pieceId in boardStatus)){
       eliminate(currentBoard[pieceId],team);
@@ -606,24 +656,56 @@ updateBoard=function(boardStatus,team='unknown'){
     if (!(pieceId in currentBoard)){
       const piece=createPiece(pieceId,getColor(pieceId));
       currentBoard[pieceId]=piece;
-      moveTo(piece,size-1-boardStatus[pieceId][1],-2);
+      // moveTo(piece,size-1-boardStatus[pieceId][1],-2);
+      moveTo(piece,boardStatus[pieceId][1],-2);
       piece.style.display='block';
       board.appendChild(piece);
       // Make the piece to appear
       setTimeout(()=>{
         // piece.style.display='block';
         piece.classList.add('appearing');
-        moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+        // moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+        moveTo(piece,boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
         setTimeout(()=>{
           piece.classList.remove('appearing');
-        },300/PLAYING_SPEED);
+        },unitTime/PLAYING_SPEED);
       },25/PLAYING_SPEED);// The lag time here should be changed according to the play scale
     } else{
       const piece=currentBoard[pieceId];
-      moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+      // moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+      moveTo(piece,boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
     }
   }
 }
+// updateBoard=function(boardStatus,team='unknown'){
+//   for (let pieceId in currentBoard){
+//     if (!(pieceId in boardStatus)){
+//       eliminate(currentBoard[pieceId],team);
+//       delete currentBoard[pieceId];
+//     }
+//   }
+//   for (let pieceId in boardStatus){
+//     if (!(pieceId in currentBoard)){
+//       const piece=createPiece(pieceId,getColor(pieceId));
+//       currentBoard[pieceId]=piece;
+//       moveTo(piece,size-1-boardStatus[pieceId][1],-2);
+//       piece.style.display='block';
+//       board.appendChild(piece);
+//       // Make the piece to appear
+//       setTimeout(()=>{
+//         // piece.style.display='block';
+//         piece.classList.add('appearing');
+//         moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+//         setTimeout(()=>{
+//           piece.classList.remove('appearing');
+//         },300/PLAYING_SPEED);
+//       },25/PLAYING_SPEED);// The lag time here should be changed according to the play scale
+//     } else{
+//       const piece=currentBoard[pieceId];
+//       moveTo(piece,size-1-boardStatus[pieceId][1],size+preview-1-boardStatus[pieceId][0]);
+//     }
+//   }
+// }
 // Define a function to draw the score graph
 updateScoreGraph=function(){
   
@@ -705,23 +787,44 @@ function remove(piece){
   piece.remove();
 }
 // Define a function to eliminate a piece
+// function eliminate(piece,team='unknown'){
+//   if (piece.style.display === "none") {
+//     return;
+//   } else{
+//   piece.classList.add("eliminated");
+//   piece.style.zIndex='30';
+//   setTimeout(function(){
+//     remove(piece);
+//   }
+//   ,300/PLAYING_SPEED);// Need to be adjusted according to the play scale
+//   if (team==='unknown'){
+//   piece.style.top=`${borderWidth + (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
+//   }else if (team==="left") {
+//   piece.style.left=`${borderWidth +  (-2) * unitSize + blockGap/2+radiusGap / 2}px`;
+//   } else if (team==="right") {
+//   piece.style.left=`${borderWidth +  (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
+//   }
+// } 
+// }
 function eliminate(piece,team='unknown'){
   if (piece.style.display === "none") {
     return;
   } else{
   piece.classList.add("eliminated");
-  piece.style.zIndex='30';
+  piece.style.zIndex='90';
   setTimeout(function(){
     remove(piece);
   }
-  ,300/PLAYING_SPEED);// Need to be adjusted according to the play scale
-  if (team==='unknown'){
-  piece.style.top=`${borderWidth + (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
-  }else if (team==="left") {
-  piece.style.left=`${borderWidth +  (-2) * unitSize + blockGap/2+radiusGap / 2}px`;
-  } else if (team==="right") {
-  piece.style.left=`${borderWidth +  (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
-  }
+  ,unitTime/PLAYING_SPEED);// Need to be adjusted according to the play scale
+  setTimeout(()=>{
+    if (team==='unknown'){
+      piece.style.top=`${borderWidth + (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
+      }else if (team==="left") {
+      piece.style.left=`${borderWidth +  (-2) * unitSize + blockGap/2+radiusGap / 2}px`;
+      } else if (team==="right") {
+      piece.style.left=`${borderWidth +  (2+size) * unitSize + blockGap/2+radiusGap / 2}px`;
+      }
+  },150/PLAYING_SPEED)
 } 
 }
 
@@ -901,8 +1004,10 @@ function initializeGraph(scores){
         },
       },
       {
-        type: 'none',
-      }
+      type: 'custom', // 使用 'custom' 类型
+      renderItem: function() {}, // 定义一个空的 renderItem 函数
+      data: [] // 无数据
+    }
     ]
   };
 

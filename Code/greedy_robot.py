@@ -153,12 +153,12 @@ class Best:
         return action_space[np.random.randint(0, len(action_space))]
 
 
-class Robot:
+class Plaser:
     def __init__(self):
         pass
 
     @ staticmethod
-    def move(current_board, valid_movements):
+    def move(current_board, valid_movements, *args):
         board = MyBoard(board=current_board)
         root = Best(board=board)
         return root.select()

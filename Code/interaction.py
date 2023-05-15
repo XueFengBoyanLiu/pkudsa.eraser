@@ -23,7 +23,7 @@ class Game_play():
         ----------
         player_1, player_2: the player's code
         '''
-        self.players = (Player_safe(player_1.Robot()), Player_safe(player_2.Robot()))
+        self.players = (Player_safe(player_1.Plaser()), Player_safe(player_2.Plaser()))
         self.terminated = False
         # the players are wrapped by exception_manager.py
         self.board = Board(seed=seed) if board is None else board
@@ -80,8 +80,6 @@ class Game_play():
         current_player = self.players[side]
         self.scores_history.append(self.score.copy())
         self.current_combo[side] = 0
-        if self.turn % 100 == 0:
-            print(f'perform turn {self.turn}, current player {side}')
 
         # make a move for the current player
         mv = self.ask_for_move(current_player)
@@ -113,7 +111,8 @@ class Game_play():
         Given current board, get a move from the current player
         Returns: ((x1, y1), (x2, y2))
         '''
-        return player('move', *self.board.get_info())
+        score = self.score if self.turn % 2 == 0 else self.score[::-1]
+        return player('move', *self.board.get_info(), score, (self.turn+1)//2)
 
     def record_frame(self):
         '''
@@ -138,7 +137,6 @@ class Game_play():
         return
 
     def start_game(self):
-        print('Game starts')
         while not self.terminated:
             self.perform_turn()
         self.end_game()
@@ -165,7 +163,6 @@ class Game_play():
             self.replay['extra'] = 1000
             self.replay['reason'] = 'An error occurred: '
             self.replay['reason'] += self.replay['errorMessage'].split('\n')[-2]
-        print('Game ends')
 
     def save_log(self, path):
         with open(path, 'w') as f:
@@ -202,7 +199,6 @@ if __name__ == '__main__':
     bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
             fb.FailedRobot4(), fb.FailedRobot5()]
     game = Game_play(greedy_robot, greedy_robot)
-    #game = Game_play(test_bot, test_bot)
     import time
     a = time.time()
     game.start_game()

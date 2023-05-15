@@ -128,7 +128,7 @@ initialization=function(record){
   totalFrameNumber.innerText=totalFrames-1;
 
   initializeGraph(scores);
-  myChart.setOption(optionRelative);
+  myChart.setOption(optionAbsolute);
   startPlaying();
 }
 
@@ -335,7 +335,7 @@ function moveTo(piece,x,y){
 function test() {
   for(i=0;i<size;i++){
     for (j=0;j<size+preview;j++){
-      let piece=createPiece(`r${j}c${i}`,colorArray[colorShift+Math.floor(Math.random()*colorArray.length)]);
+      let piece=createPiece(`r${j}c${i}`,colorArray[colorShift+Math.floor(Math.random()*5)]);
       piece.style.display='block';
       moveTo(piece,i,j);
       board.appendChild(piece);

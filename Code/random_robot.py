@@ -19,6 +19,6 @@ class Plaser:
         pass
 
     @ staticmethod
-    def move(current_board, valid_movement):
+    def move(current_board, valid_movement, *args):
         root = Random()
         return root.select(valid_movement)

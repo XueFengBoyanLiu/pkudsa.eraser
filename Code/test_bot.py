@@ -13,7 +13,7 @@ class Random:
 
 
 class Plaser:
-    def __init__(self, strategy=Random):
+    def __init__(self, *args, strategy=Random):
         self.strategy = strategy()
 
     def move(self, current_board, valid_movement, *args):

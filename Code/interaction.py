@@ -23,7 +23,8 @@ class Game_play():
         ----------
         player_1, player_2: the player's code
         '''
-        self.players = (Player_safe(player_1.Plaser()), Player_safe(player_2.Plaser()))
+        self.players = (Player_safe(player_1.Plaser(False)),
+                Player_safe(player_2.Plaser(True)))
         self.terminated = False
         # the players are wrapped by exception_manager.py
         self.board = Board(seed=seed) if board is None else board
@@ -193,11 +194,8 @@ class Game_play():
 
 if __name__ == '__main__':
     import test_bot
-    tp = test_bot.Robot()
     import failed_test_bot as fb
     import greedy_robot
-    bots = [fb.FailedRobot1(), fb.FailedRobot2(), fb.FailedRobot3(),
-            fb.FailedRobot4(), fb.FailedRobot5()]
     game = Game_play(greedy_robot, greedy_robot)
     import time
     a = time.time()

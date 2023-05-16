@@ -57,10 +57,11 @@ class Player_safe:
                     args=(*args,), kwargs={**kwargs})
             thread.daemon = True
             thread.start()
-            thread.join(MAX_TIME)
+            thread.join(MAX_TIME - self.time)
             if isinstance(result.state, Exception):
                 raise result.state
-            if result.state >= MAX_TIME:
+            self.time += result.state
+            if self.time >= MAX_TIME:
                 raise Timeout()
             if funcname == 'move':
                 self.check_for_invalid_move(result.result)

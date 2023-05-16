@@ -1,10 +1,8 @@
 ## the game interaction
-#from __future__ import annotations
 from board import *
 from exception_manager import *
 from eraserconfig import *
 
-import threading
 import traceback
 import numpy as np
 import json
@@ -23,8 +21,8 @@ class Game_play():
         ----------
         player_1, player_2: the player's code
         '''
-        self.players = (Player_safe(player_1.Plaser(False)),
-                Player_safe(player_2.Plaser(True)))
+        self.players = (Player_safe(player_1.Plaser()),
+                Player_safe(player_2.Plaser()))
         self.terminated = False
         # the players are wrapped by exception_manager.py
         self.board = Board(seed=seed) if board is None else board

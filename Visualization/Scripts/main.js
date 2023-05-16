@@ -8,7 +8,7 @@ const width=380;
 const unitSize=width/size;
 const borderWidth=unitSize/size;
 
-const remainedBarHeight=80;
+const remainedBarHeight=60;
 
 const blockGap=unitSize/10;
 const blockBorderRadius=unitSize/10;

@@ -57,10 +57,11 @@ class Player_safe:
                     args=(*args,), kwargs={**kwargs})
             thread.daemon = True
             thread.start()
-            thread.join(MAX_TIME)
+            thread.join(MAX_TIME - self.time)
             if isinstance(result.state, Exception):
                 raise result.state
-            if result.state >= MAX_TIME:
+            self.time += result.state
+            if self.time >= MAX_TIME:
                 raise Timeout()
             if funcname == 'move':
                 self.check_for_invalid_move(result.result)
@@ -83,19 +84,3 @@ class Player_safe:
             raise InvalidMove('Not adjacent positions.')
         if not ((blocks >= 0) & (blocks < BOARD_SIZE)).all():
             raise InvalidMove('Positions out of board.')
-
-if __name__ == '__main__':
-    class tester:
-        def __init__(self):
-            pass
-        def move(self, n, a, b):
-            if n == 0:
-                return ((a,a),(b,a))
-            time.sleep(0.01)
-            return self.move(n-1, a, b)
-
-    t = tester()
-    p = Player_safe(t)
-    out = p('move', 9, -1, 0)
-    print(out, p.time)
-    print(p.error)

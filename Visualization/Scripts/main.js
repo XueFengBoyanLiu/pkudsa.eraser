@@ -8,7 +8,7 @@ const width=380;
 const unitSize=width/size;
 const borderWidth=unitSize/size;
 
-const remainedBarHeight=60;
+const remainedBarHeight=80;
 
 const blockGap=unitSize/10;
 const blockBorderRadius=unitSize/10;
@@ -240,8 +240,8 @@ function initializeGrid() {
     for (let j=1;j<=size;j++){
       let backgroundBlock=templateBackgroundBlock.cloneNode(true);
       if (i<=preview){
-        backgroundBlock.style.backgroundColor="white";
-        backgroundBlock.style.opacity="0.9";
+        backgroundBlock.style.backgroundColor="gray";
+        backgroundBlock.style.opacity="0.7";
       } else{
         backgroundBlock.style.backgroundColor="white";
         backgroundBlock.style.opacity="0.2";

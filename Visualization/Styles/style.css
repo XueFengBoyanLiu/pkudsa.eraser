@@ -352,11 +352,26 @@ body{
   /* border-style: double; */
   /* border-width: var(--border-width); */
 
-  border-radius: 12px;
-  background-color: rgb(0, 0, 43);
-  background: url(../photos/beautifulBlue.jpg) no-repeat center center/ cover;
+  /* border-radius: 12px;
+  background-color: rgb(0, 0, 43); */
+  /* background: url(../photos/beautifulBlue.jpg) no-repeat center center/ cover; */
   /* background: url(../photos/wallpaper.webp) no-repeat center center/ cover; */
 }
+#preview-board{
+  width: calc(var(--width) + var(--border-width) * 2);
+  height: calc(var(--unit-size) * var(--preview) + var(--border-width)*1);
+
+  box-sizing: border-box;
+}
+#main-board{
+  width: calc(var(--width) + var(--border-width) * 2);
+  height: calc(var(--unit-size) * var(--size) + var(--border-width) * 1);
+  box-sizing: border-box;
+  border-radius: 12px;
+  background-color: rgb(0, 0, 43);
+
+}
+
 /* File chooser */
 #file-chooser, #folder-chooser, button{
   font-weight: bold;

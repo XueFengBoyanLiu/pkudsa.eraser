@@ -122,7 +122,7 @@ $$
 
 ***
 ## 五 关于测试与调试
-下文所述工具与文件请自行前往github下载：https://github.com/XueFengBoyanLiu/pkudsa.eraser。
+下文所述工具与文件请自行前往github下载：[星际消战](https://github.com/XueFengBoyanLiu/pkudsa.eraser)。
 <img src="无标题.png" style="zoom:25%;" />
 
 ### 5.1 关于统一公布的AI
@@ -142,14 +142,14 @@ $$
 - 刷新网页即可进行下一次复盘。
 
 更多功能参见：
-https://www.bilibili.com/video/BV12o4y1c7Sn/?vd_source=ece9f8be48529369c064ce2d9003d536。
+[功能演示视频](https://www.bilibili.com/video/BV12o4y1c7Sn/?vd_source=ece9f8be48529369c064ce2d9003d536)。
 
 另外，服务器对战平台也可点击相应对局直接进行可视化。
 
 
 ## 六 热身赛和正式赛
 ### 6.1 模拟赛
-模拟赛从即日起开始到6月2日结束。所有同学都可以注册个人用户，上传自己的文件至代码竞技场自由对战，厮杀。代码竞技场的网页链接：http://gis4g.pku.edu.cn/ai_arena/game/7/ 。模拟赛天梯分不计入大作业成绩。
+模拟赛从即日起开始到6月2日结束。所有同学都可以注册个人用户，上传自己的文件至代码竞技场自由对战，厮杀。代码竞技场的网页链接：[星际消战代码竞技场](http://gis4g.pku.edu.cn/ai_arena/game/7/) 。模拟赛天梯分不计入大作业成绩。
 
 ### 6.2 正式赛
 各小组以小组账号登录，上传正式参赛代码文件（限一份）。暂定于6月1日 18:00 发放小组账号，上传时间期限为6月2日 18:00 。注意提交后小组的参赛代码文件不可修改。

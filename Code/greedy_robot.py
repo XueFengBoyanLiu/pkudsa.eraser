@@ -100,7 +100,7 @@ class Plaser:
     def __init__(self, *args):
         pass
 
-    def move(self, current_board, valid_movements):
+    def move(self, current_board, valid_movements, *args):
         board = MyBoard(board=current_board, colors=np.array(list(COLORS.keys())))
         root = Best(board=board)
         return root.select(valid_movements=valid_movements)

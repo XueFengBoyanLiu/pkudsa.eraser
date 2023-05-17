@@ -145,6 +145,8 @@ class Game_play():
         '''End the game and format the replay as .json file'''
         if self.replay['errorStatus'] == -1:
             self.replay['winner'] = np.argmax(self.score)
+            if self.score[0] == self.score[1]:
+                self.replay['winner'] = 0 if self.players[0].time < self.players[1].time else 1
 
         history = np.vstack(self.scores_history)
         self.replay['scores'] = {'left': history[:, 0],
@@ -157,7 +159,7 @@ class Game_play():
             if self.turn < 2 * MAX_TURN:
                 self.replay['reason'] = 'Run out of blocks'
             else:
-                self.replay['reason'] = 'Reach turn limit'
+                self.replay['reason'] = 'Reach the maximum turn number'
         else:
             self.replay['extra'] = 1000
             self.replay['reason'] = 'An error occurred: '

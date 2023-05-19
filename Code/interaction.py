@@ -21,8 +21,8 @@ class Game_play():
         ----------
         player_1, player_2: the player's code
         '''
-        self.players = (Player_safe(player_1.Plaser()),
-                Player_safe(player_2.Plaser()))
+        self.players = (Player_safe(player_1.Plaser(False)),
+                Player_safe(player_2.Plaser(True)))
         self.terminated = False
         # the players are wrapped by exception_manager.py
         self.board = Board(seed=seed) if board is None else board

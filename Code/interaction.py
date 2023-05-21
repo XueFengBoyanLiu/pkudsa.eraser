@@ -111,7 +111,8 @@ class Game_play():
         Returns: ((x1, y1), (x2, y2))
         '''
         score = self.score if self.turn % 2 == 0 else self.score[::-1]
-        return player('move', *self.board.get_info(), score, (self.turn+1)//2)
+        return player('move', *self.board.get_info(), score, (self.turn + 1) // 2,
+                      move_history=self.board.move_history.copy())
 
     def record_frame(self):
         '''

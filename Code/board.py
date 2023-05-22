@@ -32,7 +32,6 @@ class Board:
         self.board = np.dstack((self.board, self.id_matrix))
         self.times = {'get_info':0, 'eliminate':0, 'falling':0, 'check':0}
         
-        self.move_history = []
 
     @property
     def mainboard(self):
@@ -184,7 +183,6 @@ class Board:
         temp1 = self.board[x1, y1, :].copy()
         temp2 = self.board[x2, y2, :].copy()
         self.board[x1, y1, :], self.board[x2, y2, :] = temp2, temp1
-        self.move_history.append(((x1, y1), (x2, y2)))
 
     def eliminate(self, func=lambda x: (x - 2) ** 2):
         '''

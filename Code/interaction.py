@@ -23,7 +23,8 @@ class Game_play():
         '''
         self.players = (Player_safe(player_1.Plaser(False)),
                 Player_safe(player_2.Plaser(True)))
-        self.players[0].core.move_history = self.players[1].core.move_history = self.move_history = []
+        self.players[0].core.move_history = []
+        self.players[1].core.move_history = []
         self.terminated = False
         # the players are wrapped by exception_manager.py
         self.board = Board(seed=seed) if board is None else board
@@ -91,7 +92,8 @@ class Game_play():
             return
 
         self.board.change(*mv)
-        self.move_history.append(mv)
+        self.players[0].core.move_history.append(mv)
+        self.players[1].core.move_history.append(mv)
         self.record_frame()
 
         # eliminating blocks

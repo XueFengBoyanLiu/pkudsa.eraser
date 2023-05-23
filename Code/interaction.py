@@ -54,7 +54,8 @@ class Game_play():
         data = {'totalScores': self.score[side],
                 'highestCombo': self.high_combo[side],
                 'currentCombo': self.current_combo[side],
-                'status': a + b}
+                'status': a + b,
+                'totalTime': self.players[side].time}
         return data
 
     @property
@@ -157,6 +158,7 @@ class Game_play():
                                 'right': history[:, 1],
                                 'relative': history[:, 1] - history[:, 0]}
         self.replay['length'] = self.turn
+        self.replay['time'] = [self.players[0].time, self.players[1].time]
 
         if self.replay['errorStatus'] == -1:
             self.replay['extra'] = abs(self.score[0] - self.score[1])
@@ -183,7 +185,8 @@ class Game_play():
                 'length': self.turn,
                 'score': 1000,
                 'reason': None,
-                'order': self.replay['order']}
+                'order': self.replay['order'],
+                'time': [self.players[0].time, self.players[1].time]}
         if self.replay['errorStatus'] == -1:
             log['score'] = abs(self.score[0] - self.score[1])
             if self.turn < 2 * MAX_TURN:

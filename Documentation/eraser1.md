@@ -114,7 +114,7 @@ $$
 - 双方分数 `scores` (列表)，`scores[0]` 为本队分数，`scores[1]` 为对手分数。
 - 当前回合数 `turn_number` （整数）：指属于己方的1-100操作回合。  
 
-游戏平台将给`Plaser`添加一个属性`move_history`（一个列表：包含敌我双方的操作，按操作发生的时间顺序排列），此列表在每回合操作发生后进行更新，新的操作被加入到列表末端，玩家可以根据需要查询操作记录。（ `self.move_history[i]` 是一个形如 `((x1, y1), (x2, y2))` 的元组，表示一次交换相邻棋子的操作。）
+游戏平台将给`Plaser`添加一个属性`move_history`（一个列表：包含敌我双方的操作，按操作发生的时间顺序排列），此列表在每回合操作发生后进行更新，新的操作被加入到列表末端，玩家可以根据需要查询操作记录。（ `self.move_history[i]` 是一个形如 `((x1, y1), (x2, y2),owner,isvalid)` 的元组：(x1, y1), (x2, y2)表示一次交换相邻棋子的操作；`owner`表示操作发出方，`isvalid`为`True`或`False`，表示操作合法与否。）
 ***
 ## 四 玩家提交文件要求
 玩家需要编写并提交一个python文件，其中应包含 `Plaser` 类（Plaser=Player+Eraser）。 `Plaser` 类中至少要实现成员方法 `move(self, board, operations, scores, turn_number)` 与初始化方法 `__init__(self,is_First)` 。  

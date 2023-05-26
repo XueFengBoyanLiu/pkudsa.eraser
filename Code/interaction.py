@@ -21,11 +21,13 @@ class Game_play():
         ----------
         player_1, player_2: the player's code
         '''
-        self.players = (Player_safe(player_1.Plaser(False)),
-                Player_safe(player_2.Plaser(True)))
-        self.players[0].core.move_history = []
-        self.players[1].core.move_history = []
+        self.players = (Player_safe(player_1.Plaser, False),
+                Player_safe(player_2.Plaser, True))
         self.terminated = False
+        if not self.players[0].error:
+            self.players[0].core.move_history = []
+        if not self.players[1].error:
+            self.players[1].core.move_history = []
         # the players are wrapped by exception_manager.py
         self.board = Board(seed=seed) if board is None else board
         self.remained_blocks = np.full(BOARD_SIZE, N_ROWS - BOARD_SIZE - 2)

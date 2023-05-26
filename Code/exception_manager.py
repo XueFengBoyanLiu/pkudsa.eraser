@@ -34,11 +34,13 @@ class Caller:
             self.state = exception
 
 class Player_safe:
-    def __init__(self, core, name=''):
-        self.name = name
-        self.core = core
-        self.time = 0
+    def __init__(self, core, *args):
         self.error = None
+        try:
+            self.core = core(*args)
+        except:
+            self.error = traceback.format_exc()
+        self.time = 0
 
     def __call__(self, funcname, *args, **kwargs):
         '''Call the 'funcmane' method of the core class

@@ -43,7 +43,7 @@ class MyBoard:
             if to_eliminate[coord[0], coord[1]] == 1:
                 continue
             head = 0
-            connected = [coord, ]
+            connected = np.array([coord])
             while head < len(connected):
                 current = connected[head]
                 to_eliminate[current[0], current[1]] = 1
@@ -51,9 +51,10 @@ class MyBoard:
                     neighbor = current + d
                     if (neighbor < 0).any() or (neighbor >= self.size).any():
                         continue
+
                     if (arr[neighbor[0], neighbor[1]] == arr[current[0], current[1]]
-                            and to_eliminate[neighbor[0], neighbor[1]] == 0):
-                        connected.append(neighbor)
+                        and to_eliminate[neighbor[0], neighbor[1]] == 0) and not (connected == [neighbor]).all(1).any():
+                        connected = np.concatenate((connected, [neighbor]))
                 head += 1
             score += func(len(connected))
 
@@ -65,9 +66,8 @@ class MyBoard:
             col = self.board[i]
             self.board[i, :col_remained[i]] = col[:self.size][to_eliminate[i] == 0]
             self.board[i, col_remained[i]:N_ROWS - col_eliminated[i]] = col[self.size:]
-            self.board[i, N_ROWS - col_eliminated[i]:] = np.nan
+            self.board[i, N_ROWS - col_eliminated[i]:] = 'nan'
 
-        # Return the total score and the number of columns eliminated
         return score, col_eliminated
 
 
@@ -97,10 +97,10 @@ class Best:
 
 
 class Plaser:
-    def __init__(self, *args):
+    def __init__(self, is_First):
         pass
 
-    def move(self, current_board, valid_movements, *args):
-        board = MyBoard(board=current_board, colors=np.array(list(COLORS.keys())))
+    def move(self, board, operations, scores, turn_number, **kwargs):
+        board = MyBoard(board=board, colors=np.array(list(COLORS.keys())))
         root = Best(board=board)
-        return root.select(valid_movements=valid_movements)
+        return root.select(valid_movements=operations)

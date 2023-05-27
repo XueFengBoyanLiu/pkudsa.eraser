@@ -39,7 +39,7 @@ class MyBoard:
         to_visit = self.check(arr)
         score = 0
 
-        for coord in to_visit:
+                for coord in to_visit:
             if to_eliminate[coord[0], coord[1]] == 1:
                 continue
             head = 0

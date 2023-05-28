@@ -21,7 +21,6 @@ class Board:
         if seed:
             np.random.seed(seed)
         self.board = np.concatenate([self.generate_board() for i in np.arange(board_num)], axis=1)
-        self.move_dict = {}
 
         # Use numpy.indices to create a matrix of row/column indices for each cell
         a = np.indices((self.size, self.size * board_num))
@@ -30,6 +29,15 @@ class Board:
 
         # Add ID matrix to the main board
         self.board = np.dstack((self.board, self.id_matrix))
+        
+        # Incase the original board is unerasable.
+        while not self.get_info()[1]:
+            self.board = np.concatenate([self.generate_board() for i in np.arange(board_num)], axis=1)
+
+            a = np.indices((self.size, self.size * board_num))
+            self.id_matrix = np.apply_along_axis(lambda x: f'r{x[1]:04d}c{x[0]:04d}', 0, a)
+
+            self.board = np.dstack((self.board, self.id_matrix))
         self.times = {'get_info':0, 'eliminate':0, 'falling':0, 'check':0}
         
 

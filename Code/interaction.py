@@ -26,9 +26,11 @@ class Game_play():
         self.terminated = False
         if not self.players[0].error:
             self.players[0].core.move_history = []
+            self.players[0].core.used_time = [0, 0]
         if not self.players[1].error:
             self.players[1].core.move_history = []
-        self.players[0].core.used_time = self.players[1].core.used_time = 0
+            self.players[1].core.used_time = [0, 0]
+        
         # the players are wrapped by exception_manager.py
         self.board = Board(seed=seed) if board is None else board
         self.remained_blocks = np.full(BOARD_SIZE, N_ROWS - BOARD_SIZE - 2)
@@ -102,7 +104,7 @@ class Game_play():
         self.board.change(*mv)
         self.players[0].core.move_history.append(mv)
         self.players[1].core.move_history.append(mv)
-        self.players[side].core.used_time = self.players[side].time
+        self.players[0].core.used_time[side] = self.players[1].core.used_time[1-side] = self.players[side].time
         self.record_frame()
 
         # eliminating blocks

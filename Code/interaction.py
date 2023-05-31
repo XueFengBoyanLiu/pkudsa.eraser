@@ -30,7 +30,7 @@ class Game_play():
         if not self.players[1].error:
             self.players[1].core.move_history = []
             self.players[1].core.used_time = [0, 0]
-        
+
         # the players are wrapped by exception_manager.py
         self.board = Board(seed=seed) if board is None else board
         self.remained_blocks = np.full(BOARD_SIZE, N_ROWS - BOARD_SIZE - 2)
@@ -169,6 +169,8 @@ class Game_play():
                                 'relative': history[:, 1] - history[:, 0]}
         self.replay['length'] = self.turn
         self.replay['time'] = [self.players[0].time, self.players[1].time]
+        if self.turn >= 6:
+            self.replay['tags'] = self.tags
 
         if self.replay['errorStatus'] == -1:
             self.replay['extra'] = abs(self.score[0] - self.score[1])
@@ -190,6 +192,29 @@ class Game_play():
         return
 
     @property
+    def tags(self):
+        tags = []
+        relative = self.replay['scores']['relative']
+        lead = np.sum(relative < 0) / self.turn
+        if abs(self.score[0] - self.score[1]) > 200:
+            tags.append(('遥遥领先', 'red'))
+        if abs(self.score[0] - self.score[1]) < 10:
+            tags.append(('险胜', 'red'))
+        if abs(lead - 0.5) < 0.1 and abs(relative.mean()) < 100:
+            tags.append(('有来有回', 'blue'))
+        if abs(lead - 0.5) > 0.4 or abs(relative.mean()) > 200:
+            tags.append(('压制', 'blue'))
+        if relative[-1] * relative[-2] < 0 or relative[-2] * relative[-3] < 0:
+            tags.append(('绝杀', 'purple'))
+        if (relative > 200).sum() >= 5 and self.replay['winner'] == 0:
+            tags.append(('逆风翻盘', 'green'))
+        if (relative < -200).sum() >= 5 and self.replay['winner'] == 1:
+            tags.append(('逆风翻盘', 'green'))
+        hc = max(self.high_combo[0], self.high_combo[1])
+        tags.append(('{}连消'.format(hc), 'gray'))
+        return tags
+
+    @property
     def log_data(self):
         '''Return the log data to server'''
         log = {'winner': self.replay['winner'],
@@ -198,7 +223,7 @@ class Game_play():
                 'length': self.turn,
                 'score': 1000,
                 'reason': None,
-                'order': self.replay['order'],
+                'tags': self.tags,
                 'time': [self.players[0].time, self.players[1].time]}
         if self.replay['errorStatus'] == -1:
             log['score'] = abs(self.score[0] - self.score[1])
@@ -220,4 +245,8 @@ if __name__ == '__main__':
     b = time.time()
     print(b - a)
     print(game.log_data)
+    import matplotlib.pyplot as plt
+    plt.plot(game.replay['scores']['relative'])
+    plt.axis(True)
+    plt.show()
     game.save_log('replay.json')

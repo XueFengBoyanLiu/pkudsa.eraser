@@ -8,7 +8,7 @@ Created on Tue May 30 13:58:33 2023
 from collections import namedtuple
 from numpy import array
 
-from .pattern import Pattern
+from pattern import Pattern
 
 vec2 = namedtuple("vec2", ("x", "y"))
 Operation = namedtuple("Operation", ("pos1", "pos2"))

@@ -7,24 +7,29 @@ Created on Tue May 30 13:38:01 2023
 
 
 import numpy as np
-from skimage import measure
 from time import perf_counter
 
 
-from .scoreboard import ScoredBoard
-from .direction import direction
-from .config import (
+from scoreboard import ScoredBoard
+from direction import (
+    direction, 
+    direction_conn, 
+)
+from config import (
     vec2, 
     Operation, 
-    LEVEL, 
     BOARDSIZE, 
     PATTERNS, 
     NA, 
 )
 
 
-
 class BoardManager:
+    
+    def __init__(self, is_first: bool = None) -> None:
+        _ = is_first
+    
+    
     scoreboards: list[set[ScoredBoard]] = list()
     mapper = {
         'R': 1, 
@@ -116,7 +121,7 @@ class BoardManager:
         return board, erased
         
     def _find_movables(self, board: np.ndarray) -> list[Operation]:
-        labeled = measure.label(board, connectivity=2)
+        labeled = self._label(board, connectivity=2)
         
         clustered_indexes = [
             np.where(labeled == label)
@@ -127,6 +132,30 @@ class BoardManager:
         possibles = self._filter_not_removable(clustered_indexes)
         
         return possibles
+    
+    def _label(self, board: np.ndarray, connectivity: int) -> np.ndarray:
+        no = 1
+        boardshape = vec2(*board.shape)
+        new = np.zeros(boardshape, dtype=np.int8)
+        for element in self.mapper.values():
+            is_element: np.ndarray = np.array( board == element , dtype=np.int8 )
+            _x, _y = is_element.shape
+            for x in range(_x):
+                for y in range(_y):
+                    labeled = False
+                    if is_element[x][y]:
+                        for d in direction_conn(boardshape, vec2(x,y), connectivity):
+                            if is_element[x+d.x][y+d.y]:
+                                is_element[x][y] = is_element[x+d.x][y+d.y]
+                                labeled = True
+                                # print(is_element)
+                                break
+                        if not labeled:
+                            is_element[x][y] = no
+                            no += 1
+            # print(f"\nnew=\n{new}\n")
+            new = new + is_element
+        return new
     
     def _filter_not_removable(self, clustered_indexes) -> list[Operation]:
         possibles = []
@@ -188,12 +217,12 @@ class BoardManager:
         return ( erased - 2 ) ** 2
     
     def _run(self):
-        
-        self.t0 = perf_counter()
         self.halt = False
-        
         self.level = -1
-        while ( not self.halt ) and ( self.scoreboards[ self.level + 1 ] ):
+        while ( not self.halt ):
+            if not self.scoreboards[ self.level + 1 ]:
+                print("\n\n  Stopped because No Effective Action to Perform\n\n")
+                break
             self.level += 1
             
             self.scoreboards.append( list() )
@@ -218,6 +247,7 @@ class BoardManager:
             self.scoreboards.pop(self.level + 1)
     
     def _traceback(self) -> Operation:
+        print(f"{self.scoreboards=}")
         best: ScoredBoard = self.scoreboards[-1][0]
         
         if best.select_hist:
@@ -229,6 +259,7 @@ class BoardManager:
     
     @staticmethod
     def _convert(operation: Operation) -> tuple[tuple, tuple]:
+        print(operation)
         return (
             (
                 operation.pos1.x, 
@@ -240,7 +271,10 @@ class BoardManager:
             )
         )
     
+    
     def move(self, board, availables, score, turn):
+        
+        self.t0 = perf_counter()
         
         self._init(board, availables)
         self._run()

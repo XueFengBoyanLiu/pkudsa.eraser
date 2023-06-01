@@ -1,30 +1,280 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue May 30 13:38:01 2023
-
-@author: admin
-"""
-
-
 import numpy as np
+from collections import namedtuple
 from time import perf_counter
+vec2 = namedtuple("vec2", ("x", "y"))
+Operation = namedtuple("Operation", ("pos1", "pos2"))
+class Pattern:
+    def __init__(self, pattern, operation):
+        self.pattern = pattern
+        self.operation = operation
+NA = 0
+LEVEL = 1200//6
+BOARDSIZE = vec2(6, 6*LEVEL)
+array = np.array
+PATTERNS: dict[vec2: set] = {
+    vec2(3, 2): {
+        # RIGHT
+        Pattern(
+            array((
+                (1, 0), 
+                (0, 1), 
+                (0, 1), 
+            )), 
+            Operation(
+                vec2(0, 0), 
+                vec2(0, 1)
+            )
+        ), 
+        Pattern(
+            array((
+                (0, 1), 
+                (1, 0), 
+                (0, 1), 
+            )), 
+            Operation(
+                vec2(1, 0), 
+                vec2(1, 1)
+            )
+        ), 
+        Pattern(
+            array((
+                (0, 1), 
+                (0, 1), 
+                (1, 0), 
+            )), 
+            Operation(
+                vec2(2, 0), 
+                vec2(2, 1)
+            )
+        ), 
+        # LEFT
+        Pattern(
+            array((
+                (0, 1), 
+                (1, 0), 
+                (1, 0), 
+            )), 
+            Operation(
+                vec2(0, 1), 
+                vec2(0, 0)
+            )
+        ), 
+        Pattern(
+            array((
+                (1, 0), 
+                (0, 1), 
+                (1, 0), 
+            )), 
+            Operation(
+                vec2(1, 1), 
+                vec2(1, 0)
+            )
+        ), 
+        Pattern(
+            array((
+                (1, 0), 
+                (1, 0), 
+                (0, 1), 
+            )), 
+            Operation(
+                vec2(2, 1), 
+                vec2(2, 0)
+            )
+        ), 
+    }, 
+    vec2(1, 4): {
+        # RIGHT
+        Pattern(
+            array((
+                (1, 0, 1, 1), 
+            )), 
+            Operation(
+                vec2(0, 0), 
+                vec2(0, 1)
+            )
+        ), 
+        # LEFT
+        Pattern(
+            array((
+                (1, 1, 0, 1), 
+            )), 
+            Operation(
+                vec2(0, 3), 
+                vec2(0, 2)
+            )
+        ), 
+    }, 
+    vec2(2, 3): {
+        # TOP
+        Pattern(
+            array((
+                (0, 1, 1), 
+                (1, 0, 0), 
+            )), 
+            Operation(
+                vec2(1, 0), 
+                vec2(0, 0)
+            )
+        ), 
+        Pattern(
+            array((
+                (1, 0, 1), 
+                (0, 1, 0), 
+            )), 
+            Operation(
+                vec2(1, 1), 
+                vec2(0, 1)
+            )
+        ), 
+        Pattern(
+            array((
+                (1, 1, 0), 
+                (0, 0, 1), 
+            )), 
+            Operation(
+                vec2(1, 2), 
+                vec2(0, 2)
+            )
+        ), 
+        # BOTTOM
+        Pattern(
+            array((
+                (1, 0, 0), 
+                (0, 1, 1), 
+            )), 
+            Operation(
+                vec2(0, 0), 
+                vec2(1, 0)
+            )
+        ), 
+        Pattern(
+            array((
+                (0, 1, 0), 
+                (1, 0, 1), 
+            )), 
+            Operation(
+                vec2(0, 1), 
+                vec2(1, 1)
+            )
+        ), 
+        Pattern(
+            array((
+                (0, 0, 1), 
+                (1, 1, 0), 
+            )), 
+            Operation(
+                vec2(0, 2), 
+                vec2(1, 2)
+            )
+        ), 
+    }, 
+    vec2(4, 1): {
+        # TOP
+        Pattern(
+            array((
+                tuple((1, )), 
+                tuple((1, )), 
+                tuple((0, )), 
+                tuple((1, )), 
+            )), 
+            Operation(
+                vec2(3, 0), 
+                vec2(2, 0)
+            )
+        ), 
+        # BOTTOM
+        Pattern(
+            array((
+                tuple((1, )), 
+                tuple((0, )), 
+                tuple((1, )), 
+                tuple((1, )), 
+            )), 
+            Operation(
+                vec2(0, 0), 
+                vec2(1, 0)
+            )
+        ), 
+    }, 
+}
+def direction(boardshape: vec2, pos: vec2):
+    base = {
+        vec2( 1,  0), 
+        vec2(-1,  0), 
+        vec2( 0,  1), 
+        vec2( 0, -1), 
+    }
+    if ( pos.x + 1 ) == boardshape.x:
+        base.remove(
+            vec2(1, 0)
+        )
+    if ( pos.y + 1 ) == boardshape.y:
+        base.remove(
+            vec2(0, 1)
+        )
+    if pos.x == 0:
+        base.remove(
+            vec2(-1, 0)
+        )
+    if pos.y == 0:
+        base.remove(
+            vec2(0, -1)
+        )
+    return base
 
-
-from scoreboard import ScoredBoard
-from direction import (
-    direction, 
-    direction_conn, 
-)
-from config import (
-    vec2, 
-    Operation, 
-    BOARDSIZE, 
-    PATTERNS, 
-    NA, 
-)
-
-
-class BoardManager:
+def direction_conn(boardshape: tuple, pos: tuple, connectivity: int):
+    base = {
+        vec2(-1,  0), 
+        vec2( 0, -1), 
+    }
+    if connectivity == 2:
+        base.update({
+            vec2(-1,  1), 
+            vec2(-1, -1), 
+        })
+        if pos.x == 0:
+            base.remove(
+                vec2(-1, 0)
+            )
+            base.remove(
+                vec2(-1, 1)
+            )
+            base.remove(
+                vec2(-1, -1)
+            )
+        if ( pos.y + 1 ) == boardshape.y:
+            if pos.x != 0:
+                base.remove(
+                    vec2(-1, 1)
+                )
+        if pos.y == 0:
+            base.remove(
+                vec2(0, -1)
+            )
+            if pos.x != 0:
+                base.remove(
+                    vec2(-1, -1)
+                )
+        return base
+    if pos.x == 0:
+        base.remove(
+            vec2(-1, 0)
+        )
+    if pos.y == 0:
+        base.remove(
+            vec2(0, -1)
+        )
+    return base
+class ScoredBoard:
+    def __init__(self, select_hist, score_hist, score, board, operation):
+        self.select_hist = select_hist
+        self.score_hist = score_hist
+        self.score = score
+        self.board = board
+        self.operation = operation
+    def __repr__(self):
+        return f"ScoreBoard(\nselect_hist={self.select_hist}, \nscore_hist={self.score_hist}, \nscore={self.score}, \nboard=\n{self.board}, \noperation=\n{self.operation}\n)"
+class Plaser:
     
     def __init__(self, is_first: bool = None) -> None:
         self.is_first = is_first
@@ -299,38 +549,3 @@ class BoardManager:
                 return operation[::-1]
         except AttributeError:
             return self._perform_random(availables)
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    

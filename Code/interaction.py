@@ -193,10 +193,13 @@ class Game_play():
         return log
 
 if __name__ == '__main__':
+    
+    import _player
+    
     import test_bot
     import failed_test_bot as fb
     import greedy_robot
-    game = Game_play(greedy_robot, greedy_robot)
+    game = Game_play(_player, _player)
     import time
     a = time.time()
     game.start_game()

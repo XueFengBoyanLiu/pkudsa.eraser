@@ -74,6 +74,7 @@ class Game_play():
         '''
         Perform one game turn
         '''
+        self.scores_history.append(self.score.copy())
         if self.terminated:
             self.end_game()
             return
@@ -91,7 +92,7 @@ class Game_play():
         self.turn += 1
         side = self.turn & 1
         current_player = self.players[side]
-        self.scores_history.append(self.score.copy())
+        # self.scores_history.append(self.score.copy())
         self.current_combo[side] = 0
 
         # make a move for the current player

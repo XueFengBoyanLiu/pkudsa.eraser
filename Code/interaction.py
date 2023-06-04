@@ -242,7 +242,7 @@ class Game_play():
             log['score'] = abs(self.score[0] - self.score[1])
             log['reason'] = self.replay['reason']
         else:
-            log['reason'] = 'An error occurred: '
+            log['reason'] = ''
             log['errorMessage'] = self.replay['errorMessage'].split('\n')[-2]
             log['reason'] += log['errorMessage']
         if self.turn >= 6:

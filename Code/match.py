@@ -14,13 +14,20 @@ names = [n1, n2]
 p1 = importlib.import_module(n1)
 p2 = importlib.import_module(n2)
 
+cn = {'Reach the maximum turn number': 'Reach turn 200',
+        'No eraserable moves': 'No eraserable moves',
+        ' Time limit exceeded.': 'Time out'}
+
 def print_stats(game, game_n, order):
     log = game.log_data
     if order == -1:
         log['winner'] = 1 - log['winner']
     reason = log['reason'].split(':')[-1]
-    print('{0:^12} | '.format(names[log['winner']]), end='')
-    print('{0:^30} | '.format(reason), end='')
+    if reason in cn.keys():
+        reason = cn[reason]
+    print('{0:^12s} | '.format(names[log['winner']]), end='')
+    print('{0:^12s} | '.format(names[(order+1)//2]), end='')
+    print('{0:^20} | '.format(reason), end='')
     print('{0:3d} | '.format(log['length']), end='')
     print('{0:4d} - {1:4d} | '.format(*game.score[::order]), end='')
 
@@ -31,7 +38,7 @@ game_n = 0
 path = './{}_VS_{}/'.format(*names)
 os.makedirs(path)
 
-print('{0:^12s} | {1:^30s} |{2:5s}| {3:^11s} | total scores'.format('winner', 'reason', 'turns', 'scores'))
+print('{0:^12s} | {4:^12s} | {1:^20s} |{2:5s}| {3:^11s} | total scores'.format('winner', 'reason', 'turns', 'scores', "who's first"))
 while game_n < total_games:
     seed = int(time.time() * 1000) % 1000007
     game_n += 1

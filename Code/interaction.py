@@ -171,7 +171,7 @@ class Game_play():
                                 'right': history[:, 1],
                                 'relative': history[:, 1] - history[:, 0]}
         self.replay['length'] = self.turn
-        self.replay['time'] = [self.players[0].time, self.players[1].time]
+        self.replay['time'] = np.array([self.players[0].time, self.players[1].time])
 
         if self.replay['errorStatus'] == -1:
             self.replay['extra'] = abs(self.score[0] - self.score[1])
@@ -235,9 +235,8 @@ class Game_play():
                 'errorMessage': '',
                 'errorStatus': self.replay['errorStatus'],
                 'length': self.turn,
-                'score': 1000,
+                'score': 500,
                 'reason': None,
-                'tag': self.tags,
                 'time': [self.players[0].time, self.players[1].time]}
         if self.replay['errorStatus'] == -1:
             log['score'] = abs(self.score[0] - self.score[1])
@@ -246,6 +245,8 @@ class Game_play():
             log['reason'] = 'An error occurred: '
             log['errorMessage'] = self.replay['errorMessage'].split('\n')[-2]
             log['reason'] += log['errorMessage']
+        if self.turn >= 6:
+            log['tag'] = self.tags
         return log
 
 if __name__ == '__main__':

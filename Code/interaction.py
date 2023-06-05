@@ -24,14 +24,6 @@ class Game_play():
         self.players = (Player_safe(player_1.Plaser, False),
                 Player_safe(player_2.Plaser, True))
         self.terminated = False
-        if not self.players[0].error:
-            self.players[0].core.move_history = []
-            self.players[0].core.used_time = [0, 0]
-        if not self.players[1].error:
-            self.players[1].core.move_history = []
-            self.players[1].core.used_time = [0, 0]
-        if self.players[1].error or self.players[0].error:
-            self.terminated = True
 
         # the players are wrapped by exception_manager.py
         self.board = Board(seed=seed) if board is None else board
@@ -53,6 +45,22 @@ class Game_play():
         self.high_combo = [0, 0]
         self.current_combo = [0, 0]
 
+        if not self.players[0].error:
+            self.players[0].core.move_history = []
+            self.players[0].core.used_time = [0, 0]
+        else:
+            self.replay['winner'] = 1
+            self.replay['errorStatus'] = 0
+            self.replay['errorMessage'] = self.players[0].error
+            self.terminated = True
+        if not self.players[1].error:
+            self.players[1].core.move_history = []
+            self.players[1].core.used_time = [0, 0]
+        else:
+            self.replay['winner'] = 0
+            self.replay['errorStatus'] = 1
+            self.replay['errorMessage'] = self.players[1].error
+            self.terminated = True
         self.record_frame()
 
     def _get_side_status(self, side=0):
@@ -156,6 +164,7 @@ class Game_play():
     def start_game(self):
         while not self.terminated:
             self.perform_turn()
+        self.record_frame()
         self.end_game()
         return self.replay
 
@@ -166,7 +175,10 @@ class Game_play():
             if self.score[0] == self.score[1]:
                 self.replay['winner'] = 0 if self.players[0].time < self.players[1].time else 1
 
-        history = np.vstack(self.scores_history)
+        if self.scores_history:
+            history = np.vstack(self.scores_history)
+        else:
+            history = np.array([[0, 0]])
         self.replay['scores'] = {'left': history[:, 0],
                                 'right': history[:, 1],
                                 'relative': history[:, 1] - history[:, 0]}
@@ -253,7 +265,7 @@ if __name__ == '__main__':
     import test_bot
     import failed_test_bot as fb
     import greedy_robot
-    game = Game_play(greedy_robot, greedy_robot)
+    game = Game_play(test_bot, fb)
     import time
     a = time.time()
     game.start_game()

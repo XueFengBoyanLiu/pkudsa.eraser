@@ -10,25 +10,25 @@ FailedRobot5:运行过程出错
 '''
 
 
-class FailedRobot1:
-    def __init__(self):
+class Plaser:
+    def __init__(self, *args):
         pass
 
-    def move(self, current_board, valid_movement):
+    def move(self, current_board, valid_movement, *args):
         t = time.time()
         max_t = 0.01
         if random.random() > 0.9:
-            max_t = 0.2
+            max_t = 100
         while time.time() - t < max_t:
             i = 0
         return (1, 1), (1, 2)
 
 
-class FailedRobot2:
-    def __init__(self):
+class Bot2:
+    def __init__(self, *args):
         pass
 
-    def move(self, current_board, valid_movement):
+    def move(self, current_board, valid_movement, *args):
         if random.random() > 0.98:
             return (1, 1), (1, )
         if random.random() > 0.98:

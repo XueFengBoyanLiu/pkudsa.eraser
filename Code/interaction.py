@@ -39,7 +39,7 @@ class Game_play():
                 'frames': [],
                 'extra': '',
                 'order': order,
-                'players': (player1.__name__, player2.__name__)}
+                'players': (player_1.__name__, player_2.__name__)}
 
         self.scores_history = []
         self.score = [0, 0]
